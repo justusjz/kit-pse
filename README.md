@@ -13,10 +13,10 @@ files, you can either use [Overleaf](https://overleaf.com), or install the follo
 - texlive-latexextra
 - texlive-plaingeneric
 
-Then, build using the following command in the `reports` directory:
+To build the reports, run:
 
 ```bash
-pdflatex techreport.tex
+make
 ```
 
 You might have to run this command twice to get the table of contents right.

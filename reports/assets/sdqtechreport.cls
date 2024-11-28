@@ -13,7 +13,7 @@
 %% Version 1.0, 2023-11-20
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{sdqtechreport}[2023-11-20]
+\ProvidesClass{reports/assets/sdqtechreport}[2023-11-20]
 \DeclareOption{ngerman}{\PassOptionsToPackage{\CurrentOption}{babel}}
 \DeclareOption{english}{\PassOptionsToPackage{main=\CurrentOption,ngerman}{babel}}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{scrreprt}}
@@ -114,18 +114,18 @@
 % Logos
 \newcommand{\thegrouplogo}{sdqlogo}
 \newcommand{\grouplogo}[1]{\renewcommand{\thegrouplogo}{#1}}
-\newcommand{\printgrouplogo}{\includegraphics[height=1.8cm]{logos/\thegrouplogo}}
+\newcommand{\printgrouplogo}{\includegraphics[height=1.8cm]{reports/assets/logos/\thegrouplogo}}
 \newcommand{\nogrouplogo}{\renewcommand{\printgrouplogo}{}}
 
 \titlehead{%
 % KIT logo german/english
 \ifcurrentbaselanguage{English}
-{\includegraphics[height=1.8cm]{logos/kitlogo_en_cmyk}}
-{\includegraphics[height=1.8cm]{logos/kitlogo_de_cmyk}}
+{\includegraphics[height=1.8cm]{reports/assets/logos/kitlogo_en_cmyk}}
+{\includegraphics[height=1.8cm]{reports/assets/logos/kitlogo_de_cmyk}}
 \hfill
 % SDQ logo
 \printgrouplogo
-\ThisCenterWallPaper{1}{title-background.pdf}
+\ThisCenterWallPaper{1}{reports/assets/title-background.pdf}
 }
 
 %
