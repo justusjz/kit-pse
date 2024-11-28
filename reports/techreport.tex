@@ -1,0 +1,123 @@
+
+%% LaTeX2e class for technical reports
+%% techreport.tex
+%% 
+%% Karlsruhe Institute of Technology
+%% Institute for Program Structures and Data Organization
+%% Chair for Software Design and Quality (SDQ)
+%%
+%% Dr.-Ing. Erik Burger
+%% burger@kit.edu
+%%
+%% See https://sdq.kastel.kit.edu/wiki/Dokumentvorlagen
+%%
+%% Version 1.0, 2023-11-20
+
+%% Available page modes: oneside, twoside
+%% Available languages: english, ngerman
+%% Available modes: draft, final (see README)
+\documentclass[twoside, english]{sdqtechreport}
+
+%% ---------------------------------
+%% | Information about the thesis  |
+%% ---------------------------------
+
+%% Name of the author
+\author{My Name}
+
+%% Title (and possibly subtitle) of the thesis
+\title{My Report}
+
+\subtitle{Technical Report 2023–001}
+
+%% You can put a logo in the ``logos'' directory and include it here
+%% instead of the SDQ logo
+% \grouplogo{myfile}
+%% Alternatively, you can disable the group logo
+% \nogrouplogo
+
+\date{\today}
+
+%% For example texts -- please remove in the final version
+\usepackage{blindtext}
+
+%% ====================================
+%% ====================================
+%% ||                                ||
+%% || Beginning of the main document ||
+%% ||                                ||
+%% ====================================
+%% ====================================
+\begin{document}
+
+%% Set PDF metadata
+\setpdf
+
+%% Set the title
+\maketitle
+
+%% ------------------------
+%% |   Table of Contents  |
+%% ------------------------
+\tableofcontents
+
+%% -----------------
+%% |   Main part   |
+%% -----------------
+\cleardoublepage
+
+%% -------------------
+%% | Example content |
+%% -------------------
+
+\chapter{First Chapter}
+\label{chap:FirstContent}
+
+\section{First Section}
+\label{sec:FirstContent:FirstSection}
+
+\Blindtext
+
+\subsection{A Subsection}
+\label{sec:FirstContent:FirstSubSection}
+
+\Blindtext
+
+\subsubsection{A Subsubsection}
+
+\Blindtext[1]
+
+\section{Second Section}
+\label{sec:FirstContent:SecondSection}
+
+\Blindtext
+
+\chapter{Second Chapter}
+\label{chap:SecondContent}
+
+\section{First Section}
+\label{sec:SecondContent:FirstSection}
+
+\Blindtext
+
+\subsection{A Subsection}
+\label{sec:SecondContent:FirstSubSection}
+
+\Blindtext
+
+\subsubsection{A Subsubsection}
+
+\Blindtext[1]
+
+\section{Second Section}
+\label{sec:SecondContent:SecondSection}
+
+\Blindtext
+
+%% ---------------------
+%% | / Example content |
+%% ---------------------
+
+
+\end{document}
+
