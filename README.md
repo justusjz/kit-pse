@@ -18,3 +18,5 @@ Then, build using the following command in the `reports` directory:
 ```bash
 pdflatex techreport.tex
 ```
+
+You might have to run this command twice to get the table of contents right.
