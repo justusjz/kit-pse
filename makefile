@@ -5,3 +5,5 @@ clean:
 	rm -rf out tmp
 prepare:
 	mkdir -p out tmp
+format:
+	latexindent -m -l reports/latexindent.yaml -w reports/specification.tex
