@@ -132,8 +132,6 @@
 \setkomafont{title}{\huge\sffamily\bfseries}
 \setkomafont{subtitle}{\normalfont\large}
 
-\uppertitleback{Karlsruher Institut für Technologie\\ Fakultät für Informatik\\ Postfach 6980\\ 76128 Karlsruhe}
-
 %% variables for title page
 \newcommand{\theinstitute}{\ifcurrentbaselanguage{English}
     {KASTEL -- Institute of Information Security and Dependability}
