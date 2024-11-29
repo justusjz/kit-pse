@@ -582,8 +582,10 @@ Optional:
 Mandatory:
 
 \begin{enumerate}
-	\item Packet Capture: State: IDS running, network is active. Action: Start packet
-	      capturing Expected reaction: IDS captures packets from the network.
+	\item Packet Capture: 
+ 	      State: IDS running, network is active. 
+	      Action: Start packet capturing 
+              Expected reaction: IDS captures packets from the network.
 	\item Corrupt Database: State: The Database is corrupted, for example some signature
 	      being invalid. Action: User tries to start the IDS. Expected Reaction: IDS
 	      displays an error message.
@@ -602,10 +604,12 @@ Mandatory:
 Optional:
 
 \begin{enumerate}
-	\item GUI working: State: IDS is running. Action: User opens GUI through a command or
-	      click. Expected reaction: Interface appears with information on the current
-	      traffic.
-	\item Change in the Database: State: Database contains known malicious signatures.
+	\item GUI working: 
+ 	      State: IDS is running. 
+	      Action: User opens GUI through a command or click. 
+              Expected reaction: Interface appears with information on the current traffic.
+	\item Change in the Database: 
+ 	      State: Database contains known malicious signatures.
 	      Action: The User adds or deletes a new Signature through the interface.
 	      Expected reaction: The database is updated correctly and the IDS is able to use
 	      the new signature in future packet analysis.
