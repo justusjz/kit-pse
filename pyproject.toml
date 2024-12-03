@@ -1,0 +1,9 @@
+[project]
+name = "kit-pse"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10.15"
+dependencies = [
+    "scapy>=2.6.1",
+]
