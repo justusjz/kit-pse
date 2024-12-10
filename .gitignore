@@ -1,5 +1,4 @@
 out
 tmp
 .venv
-uv.lock
 packet_logs.log

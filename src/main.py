@@ -2,6 +2,7 @@ import logging
 from scapy.all import sniff
 from scapy.layers.inet import IP, TCP
 from scapy.layers.inet import Ether
+from scapy.layers.inet6 import IPv6
 
 # Configure the logger
 LOG_FILE = "packet_logs.log"  # File where logs will be saved
@@ -89,12 +90,21 @@ def log_ip_spoofing(packet, src_mac: str, src_ip: str):
 
 
 def log_malicious_packet(packet, packet_type: str):
-    logging.warning(
-        f"MAC Address of malicious agent: {packet[Ether].src}\n"
-        + f"Captured {packet_type} Packet: {packet.summary()}\n"
-        + f"Source IP: {packet[IP].src}, Destination IP: {packet[IP].dst}\n"
-    )
-    if packet_type == "TCP":
+    if IP in packet:
+        logging.warning(
+            f"MAC Address of malicious agent: {packet[Ether].src}\n"
+            + f"Captured {packet_type} Packet: {packet.summary()}\n"
+            + f"Source IP: {packet[IP].src}, Destination IP: {packet[IP].dst}\n"
+        )
+
+    if IPv6 in packet:
+        logging.warning(
+            f"MAC Address of malicious agent: {packet[Ether].src}\n"
+            + f"Captured {packet_type} Packet: {packet.summary()}\n"
+            + f"Source IP: {packet[IPv6].src}, Destination IP: {packet[IPv6].dst}\n"
+        )
+
+    if TCP in packet:
         logging.warning(
             f"Source Port: {packet[TCP].sport}, Destination Port: {packet[TCP].dport}"
         )
