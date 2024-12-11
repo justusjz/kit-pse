@@ -90,6 +90,23 @@ def icmp_flood(packet, reset_interval=ICM_TIMEINTERVAL, threshold=ICM_THRESHOLD)
         if icmp_count[src_ip] > threshold:
             log_malicious_packet(packet, "Potential ICMP flood detected.")
 
+def checksum_check(packet):
+    if IP in packet:
+        # packet = IP(dst="10.11.12.13", src="10.11.12.14")/UDP(chksum=0)/DNS()
+        original_checksum = packet[IP].chksum  # saves original checksum for comparison
+        del packet[IP].chksum  # deletes the current checksum
+        recalculated_checksum = IP(bytes(packet[IP])).chksum  # Scapy recalculates the checksum
+        if original_checksum != recalculated_checksum:
+            log_malicious_packet(packet, "Invalid IP checksum.")
+
+    if TCP in packet:
+        original_checksum = packet[TCP].chksum  # saves original checksum for comparison
+        del packet[TCP].chksum  # deletes the current checksum
+        recalculated_checksum = TCP(bytes(packet[TCP])).chksum  # Scapy recalculates the checksum
+        if original_checksum != recalculated_checksum:
+            log_malicious_packet(packet, "Invalid TCP checksum.")
+
+
 def packet_handler(packet):
     if IP in packet:
         src_ip = packet[IP].src
@@ -105,7 +122,7 @@ def packet_handler(packet):
     match = db.detect(packet.__bytes__())
     if match != None:
         log_malicious_packet(packet, match)
-
+    checksum_check(packet)
     logging.debug(f"Captured Packet: {packet.summary()}\n")
 
 
