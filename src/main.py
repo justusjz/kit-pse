@@ -1,6 +1,9 @@
 import logging
+import time
+from collections import defaultdict
+
 from scapy.all import sniff
-from scapy.layers.inet import IP, TCP, UDP
+from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
 
@@ -15,14 +18,16 @@ logging.basicConfig(
 
 # Reserved IPs list
 reserved_ips = ["192.168.1.4", "192.168.1.1", "192.168.1.7", "172.16.0.3"]
+icmp_count = defaultdict(int)
+last_reset = time.time()  # reset timer for icmp flood
 
 
 def ip_spoofing(packet, src_ip: str):
     if src_ip not in reserved_ips:
         if (
-            src_ip.startswith("10.")
-            or src_ip.startswith("192.168.")
-            or src_ip.startswith("169.254.")
+                src_ip.startswith("10.")
+                or src_ip.startswith("192.168.")
+                or src_ip.startswith("169.254.")
         ):
             log_malicious_packet(packet, "Possible IP spoofing using private networks detected.")
 
@@ -61,11 +66,25 @@ def destination_check(packet):
             log_malicious_packet(packet, "Packets with broadcast destination address detected.")
 
 
+def icmp_flood(packet):
+    global last_reset
+    current_time = time.time()
+    if current_time - last_reset > 60:
+        icmp_count.clear()
+        last_reset = current_time
+    if ICMP in packet:
+        src_ip = packet[IP].src
+        icmp_count[src_ip] += 1
+        if icmp_count[src_ip] > 100:  # Threshold for ICMP-FLood
+            log_malicious_packet(packet, "Potential ICMP flood detected.")
+
+
 def packet_handler(packet):
     if IP in packet:
         src_ip = packet[IP].src
         ip_spoofing(packet, src_ip)
         destination_check(packet)
+        icmp_flood(packet)
 
     if TCP in packet:
         syn_fin(packet)
@@ -82,7 +101,7 @@ def log_malicious_packet(packet, warning: str):
         f"Source IP: {packet[IP].src if IP in packet else packet[IPv6].src if IPv6 in packet else 'N/A'}, "
         f"Destination IP: {packet[IP].dst if IP in packet else packet[IPv6].dst if IPv6 in packet else 'N/A'}",
         f"Source Port: {packet[TCP].sport if TCP in packet else packet[UDP].sport if UDP in packet else 'N/A'}, "
-        f"Destination Port: {packet[TCP].dport if TCP in packet else packet[UDP].dport if UDP in packet else  'N/A'}",
+        f"Destination Port: {packet[TCP].dport if TCP in packet else packet[UDP].dport if UDP in packet else 'N/A'}",
     ]
     logging.warning("\n".join(log_details))
 
@@ -90,7 +109,7 @@ def log_malicious_packet(packet, warning: str):
 def main():
     print("Starting packet capture... Logs will be saved to:", LOG_FILE)
     logging.info("Starting packet capture...")
-    sniff(prn=packet_handler, store=False, count=10)
+    sniff(iface="lo0", prn=packet_handler, store=False)
     logging.info("Packet capture completed.\n\n")
 
 
