@@ -5,5 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10.15"
 dependencies = [
+    "black>=24.10.0",
     "scapy>=2.6.1",
 ]
