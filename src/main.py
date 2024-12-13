@@ -129,6 +129,11 @@ def main():
     sniff(prn=packet_handler, store=False)
     logging.info("Packet capture completed.\n\n")
 
+    print("Starting packet capture... Logs will be saved to:", LOG_FILE)
+    logging.info("Starting packet capture...")
+    sniff(prn=packet_handler, store=False)
+    logging.info("Packet capture completed.\n\n")
+
 
 if __name__ == "__main__":
     main()
