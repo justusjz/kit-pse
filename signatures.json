@@ -1,0 +1,6 @@
+[
+	{
+		"pattern": "('|\")\\s*OR",
+		"description": "SQL injection"
+	}
+]
