@@ -7,6 +7,10 @@ from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
 
+import signature
+
+db = signature.SignatureDb("signatures.json")
+
 # Configure the logger
 LOG_FILE = "packet_logs.log"  # File where logs will be saved
 logging.basicConfig(
@@ -86,7 +90,6 @@ def icmp_flood(packet, reset_interval=ICM_TIMEINTERVAL, threshold=ICM_THRESHOLD)
         if icmp_count[src_ip] > threshold:
             log_malicious_packet(packet, "Potential ICMP flood detected.")
 
-
 def packet_handler(packet):
     if IP in packet:
         src_ip = packet[IP].src
@@ -98,6 +101,10 @@ def packet_handler(packet):
         syn_fin(packet)
         null_packet(packet)
         port_check(packet)
+
+    match = db.detect(packet.__bytes__())
+    if match != None:
+        log_malicious_packet(packet, match)
 
     logging.debug(f"Captured Packet: {packet.summary()}\n")
 
