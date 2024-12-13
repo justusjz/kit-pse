@@ -99,7 +99,6 @@ def packet_handler(packet):
         destination_check(packet)
     checksum_check(packet)
 
-
 def log_ip_spoofing(packet, src_mac: str, src_ip: str):
     logging.warning(
         "Possible IP spoofing using private networks detected. MAC %s, IP: %s",
@@ -110,13 +109,11 @@ def log_ip_spoofing(packet, src_mac: str, src_ip: str):
 
 
 def log_malicious_packet(packet, packet_type: str):
-    """
     logging.warning(
         f"MAC Address of malicious agent: {packet[Ether].src}\n"
         + f"Captured {packet_type} Packet: {packet.summary()}\n"
         + f"Source IP: {packet[IP].src}, Destination IP: {packet[IP].dst}"
     )
-    """
     if packet_type == "TCP":
         logging.warning(
             f"Source Port: {packet[TCP].sport}, Destination Port: {packet[TCP].dport}"
@@ -128,12 +125,6 @@ def main():
     logging.info("Starting packet capture...")
     sniff(prn=packet_handler, store=False)
     logging.info("Packet capture completed.\n\n")
-
-    print("Starting packet capture... Logs will be saved to:", LOG_FILE)
-    logging.info("Starting packet capture...")
-    sniff(prn=packet_handler, store=False)
-    logging.info("Packet capture completed.\n\n")
-
 
 if __name__ == "__main__":
     main()
