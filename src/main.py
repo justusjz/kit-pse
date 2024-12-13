@@ -16,6 +16,9 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+ICM_THRESHOLD = 100
+ICM_TIMEINTERVAL = 60
+
 # Reserved IPs list
 reserved_ips = ["192.168.1.4", "192.168.1.1", "192.168.1.7", "172.16.0.3"]
 icmp_count = defaultdict(int)
@@ -66,16 +69,21 @@ def destination_check(packet):
             log_malicious_packet(packet, "Packets with broadcast destination address detected.")
 
 
-def icmp_flood(packet):
+# Detects potential ICMP flood attacks by tracking ICMP packets per source IP in time interval.
+def icmp_flood(packet, reset_interval=ICM_TIMEINTERVAL, threshold=ICM_THRESHOLD):
     global last_reset
     current_time = time.time()
-    if current_time - last_reset > 60:
+
+    # Reset the ICMP count periodically
+    if current_time - last_reset > reset_interval:
         icmp_count.clear()
         last_reset = current_time
+
     if ICMP in packet:
         src_ip = packet[IP].src
         icmp_count[src_ip] += 1
-        if icmp_count[src_ip] > 100:  # Threshold for ICMP-FLood
+
+        if icmp_count[src_ip] > threshold:
             log_malicious_packet(packet, "Potential ICMP flood detected.")
 
 
@@ -91,7 +99,7 @@ def packet_handler(packet):
         null_packet(packet)
         port_check(packet)
 
-    logging.info(f"Captured Packet: {packet.summary()}\n")
+    logging.debug(f"Captured Packet: {packet.summary()}\n")
 
 
 def log_malicious_packet(packet, warning: str):
@@ -109,7 +117,7 @@ def log_malicious_packet(packet, warning: str):
 def main():
     print("Starting packet capture... Logs will be saved to:", LOG_FILE)
     logging.info("Starting packet capture...")
-    sniff(iface="lo0", prn=packet_handler, store=False)
+    sniff(prn=packet_handler, store=False)
     logging.info("Packet capture completed.\n\n")
 
 

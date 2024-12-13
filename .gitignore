@@ -2,3 +2,4 @@ out
 tmp
 .venv
 packet_logs.log
+src/python-main.sh
