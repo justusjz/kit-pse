@@ -67,7 +67,7 @@ def destination_check(packet):
 
 def checksum_check(packet):
     if IP in packet:
-        packet = IP(dst="10.11.12.13", src="10.11.12.14")/UDP(chksum=0)/DNS()
+        # packet = IP(dst="10.11.12.13", src="10.11.12.14")/UDP(chksum=0)/DNS()
         original_checksum = packet[IP].chksum  # saves original checksum for comparison
         del packet[IP].chksum  # deletes the current checksum
         recalculated_checksum = IP(bytes(packet[IP])).chksum  # Scapy recalculates the checksum
