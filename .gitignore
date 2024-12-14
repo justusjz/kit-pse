@@ -3,3 +3,4 @@ tmp
 .venv
 packet_logs.log
 src/python-main.sh
+src/__pycache__

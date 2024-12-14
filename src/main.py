@@ -32,23 +32,29 @@ last_reset = time.time()  # reset timer for icmp flood
 def ip_spoofing(packet, src_ip: str):
     if src_ip not in reserved_ips:
         if (
-                src_ip.startswith("10.")
-                or src_ip.startswith("192.168.")
-                or src_ip.startswith("169.254.")
+            src_ip.startswith("10.")
+            or src_ip.startswith("192.168.")
+            or src_ip.startswith("169.254.")
         ):
-            log_malicious_packet(packet, "Possible IP spoofing using private networks detected.")
+            log_malicious_packet(
+                packet, "Possible IP spoofing using private networks detected."
+            )
 
         elif src_ip.startswith("172."):
             octet = int(src_ip.split(".")[1])
             if 16 <= octet <= 31:
-                log_malicious_packet(packet, "Possible IP spoofing using private networks detected.")
+                log_malicious_packet(
+                    packet, "Possible IP spoofing using private networks detected."
+                )
 
 
 def syn_fin(packet):
     if TCP in packet:
         tcp_flags = packet[TCP].flags
         if "S" in tcp_flags and "F" in tcp_flags:
-            log_malicious_packet(packet, "Malicious packet detected: SYN-FIN combination.")
+            log_malicious_packet(
+                packet, "Malicious packet detected: SYN-FIN combination."
+            )
 
 
 def null_packet(packet):
@@ -63,14 +69,18 @@ def port_check(packet):
         src_port = packet[TCP].sport
         dst_port = packet[TCP].dport
         if src_port == 0 or dst_port == 0:
-            log_malicious_packet(packet, "Illegal packet with source or destination port 0.")
+            log_malicious_packet(
+                packet, "Illegal packet with source or destination port 0."
+            )
 
 
 def destination_check(packet):
     if IP in packet:
         dest_ip = packet[IP].dst
         if dest_ip.endswith(".0") or dest_ip.endswith(".255"):
-            log_malicious_packet(packet, "Packets with broadcast destination address detected.")
+            log_malicious_packet(
+                packet, "Packets with broadcast destination address detected."
+            )
 
 
 # Detects potential ICMP flood attacks by tracking ICMP packets per source IP in time interval.
@@ -90,19 +100,24 @@ def icmp_flood(packet, reset_interval=ICM_TIMEINTERVAL, threshold=ICM_THRESHOLD)
         if icmp_count[src_ip] > threshold:
             log_malicious_packet(packet, "Potential ICMP flood detected.")
 
+
 def checksum_check(packet):
     if IP in packet:
         # packet = IP(dst="10.11.12.13", src="10.11.12.14")/UDP(chksum=0)/DNS()
         original_checksum = packet[IP].chksum  # saves original checksum for comparison
         del packet[IP].chksum  # deletes the current checksum
-        recalculated_checksum = IP(bytes(packet[IP])).chksum  # Scapy recalculates the checksum
+        recalculated_checksum = IP(
+            bytes(packet[IP])
+        ).chksum  # Scapy recalculates the checksum
         if original_checksum != recalculated_checksum:
             log_malicious_packet(packet, "Invalid IP checksum.")
 
     if TCP in packet:
         original_checksum = packet[TCP].chksum  # saves original checksum for comparison
         del packet[TCP].chksum  # deletes the current checksum
-        recalculated_checksum = TCP(bytes(packet[TCP])).chksum  # Scapy recalculates the checksum
+        recalculated_checksum = TCP(
+            bytes(packet[TCP])
+        ).chksum  # Scapy recalculates the checksum
         if original_checksum != recalculated_checksum:
             log_malicious_packet(packet, "Invalid TCP checksum.")
 
