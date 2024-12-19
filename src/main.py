@@ -52,9 +52,31 @@ def syn_fin(packet):
     if TCP in packet:
         tcp_flags = packet[TCP].flags
         if "S" in tcp_flags and "F" in tcp_flags:
-            log_malicious_packet(
-                packet, "Malicious packet detected: SYN-FIN combination."
-            )
+            log_malicious_packet(packet, "SYN-FIN combination.")
+
+
+def fin_rst(packet):
+    # packet = IP(dst="192.168.1.1") / TCP(dport=80, flags="FIN|RST")
+    if TCP in packet:
+        tcp_flags = packet[TCP].flags
+        if "R" in tcp_flags and "F" in tcp_flags:
+            log_malicious_packet(packet, "RST-FIN combination.")
+
+
+def rst_syn(packet):
+    # packet = IP(dst="192.168.1.1") / TCP(dport=80, flags="SYN|RST")
+    if TCP in packet:
+        tcp_flags = packet[TCP].flags
+        if "S" in tcp_flags and "R" in tcp_flags:
+            log_malicious_packet(packet, "RST-SYN combination.")
+
+
+def xmas(packet):
+    # packet = IP(dst="192.168.1.1") / TCP(dport=80, flags="FIN|PSH|URG")
+    if TCP in packet:
+        tcp_flags = packet[TCP].flags
+        if "P" in tcp_flags and "F" in tcp_flags and "U" in tcp_flags:
+            log_malicious_packet(packet, "XMAS combination.")
 
 
 def null_packet(packet):
@@ -131,6 +153,9 @@ def packet_handler(packet):
 
     if TCP in packet:
         syn_fin(packet)
+        rst_syn(packet)
+        fin_rst(packet)
+        xmas(packet)
         null_packet(packet)
         port_check(packet)
 

@@ -12,7 +12,12 @@ class TestSignature(unittest.TestCase):
             pkt[IP].chksum = IP(bytes(pkt[IP])).chksum
             pkt[TCP].chksum = TCP(bytes(pkt[TCP])).chksum
             main.packet_handler(pkt)
-            self.assertEqual(log.output, ['WARNING:root:Malicious Packet Detected: SQL injection\n'
-                                          'MAC Address of malicious agent: N/A\n'
-                                          'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
-                                          'Source Port: 20, Destination Port: 7753'])
+            self.assertEqual(
+                log.output,
+                [
+                    "WARNING:root:Malicious Packet Detected: SQL injection\n"
+                    "MAC Address of malicious agent: N/A\n"
+                    "Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n"
+                    "Source Port: 20, Destination Port: 7753"
+                ],
+            )

@@ -24,7 +24,9 @@ To run tests, simply do:
 uv run test.py
 ```
 
-in the root directory.
+in the root directory. The tests do not need root permissions, since they don't
+actually send any packets over the network interface, they just call the handler
+directly.
 
 ## Reports
 
