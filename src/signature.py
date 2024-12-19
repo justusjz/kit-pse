@@ -1,9 +1,10 @@
 import json
 import re
+from dataclasses import dataclass
 
 
 class SignatureDb:
-    known: list[tuple[str, str]]
+    known: list[dict]
     path: str
 
     def __init__(self, path: str):
@@ -17,7 +18,7 @@ class SignatureDb:
             self.known = []
 
     def add_signature(self, pattern: str, description: str):
-        self.known.append((pattern, description))
+        self.known.append({"pattern": pattern, "description": description})
 
     def save(self, path: str | None = None):
         if path == None:
@@ -27,8 +28,8 @@ class SignatureDb:
         print(f"Saved signature database to `{path}`")
 
     def detect(self, content: bytes) -> str | None:
-        for pattern, description in self.known:
-            match = re.search(pattern, description)
+        for signature in self.known:
+            match = re.search(bytes(signature["pattern"], "utf8"), content)
             if match is not None:
-                return description
+                return signature["description"]
         return None
