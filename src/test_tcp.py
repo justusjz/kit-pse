@@ -69,3 +69,21 @@ class TestTCP(unittest.TestCase):
                     "Source Port: 20, Destination Port: 80"
                 ],
             )
+
+    def test_checksum(self):
+        with self.assertLogs() as log:
+            chksum_pkt = IP(dst="127.0.0.1", chksum=0) / TCP(dport=80, chksum=0)
+            main.packet_handler(chksum_pkt)
+            self.assertEqual(
+                log.output,
+                [
+                    "WARNING:root:Malicious Packet Detected: Invalid IP checksum.\n"
+                    "MAC Address of malicious agent: N/A\n"
+                    "Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n"
+                    "Source Port: 20, Destination Port: 80",
+                    "WARNING:root:Malicious Packet Detected: Invalid TCP checksum.\n"
+                    "MAC Address of malicious agent: N/A\n"
+                    "Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n"
+                    "Source Port: 20, Destination Port: 80"
+                ],
+            )
