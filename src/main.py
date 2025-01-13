@@ -2,7 +2,7 @@ import logging
 import time
 from collections import defaultdict
 
-from scapy.all import sniff
+from scapy.all import sniff, ARP
 from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
@@ -33,6 +33,22 @@ icmp_count = defaultdict(int)
 last_reset = time.time()  # reset timer for icmp flood
 
 malicious_ips = set([])
+
+arp_table = dict()
+
+
+def arp_spoofing(packet):
+    if packet[ARP].op == 2:
+        mac = packet[ARP].hwsrc
+        ip = packet[ARP].psrc
+        if ip in arp_table:
+            old_mac = arp_table[ip]
+            if old_mac != mac:
+                # different MAC than before
+                log_malicious_packet(packet, "ARP spoofing detected")
+        else:
+            # previously unknown IP
+            arp_table[ip] = mac
 
 
 def ip_spoofing(packet, src_ip: str):
@@ -263,6 +279,9 @@ def dns_spoofing(packet):
 
 
 def packet_handler(packet):
+    if ARP in packet:
+        arp_spoofing(packet)
+
     if IP in packet:
         src_ip = packet[IP].src
         ip_spoofing(packet, src_ip)
