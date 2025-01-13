@@ -1,4 +1,8 @@
 import unittest
+
+from scapy.layers.l2 import Ether
+from scapy.packet import Raw
+
 import main
 import time
 from scapy.layers.inet import ICMP, IP, TCP
@@ -85,5 +89,61 @@ class TestTCP(unittest.TestCase):
                     "MAC Address of malicious agent: N/A\n"
                     "Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n"
                     "Source Port: 20, Destination Port: 80"
+                ],
+            )
+
+    def test_malformed_packet_malformed_header(self):
+        with self.assertLogs() as log:
+            malformed_pkt = IP(dst="127.0.0.1", ihl=16, len=1000) / TCP(dport=80, dataofs=16)
+            main.packet_handler(malformed_pkt)
+            self.assertEqual(
+                log.output,
+                [
+                    'WARNING:root:Malicious Packet Detected: Invalid IP checksum.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80',
+                    'WARNING:root:Malicious Packet Detected: Invalid TCP checksum.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80',
+                    'WARNING:root:Malicious Packet Detected: Malformed packet detected. IP header '
+                    'length is malformed.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80',
+                    'WARNING:root:Malicious Packet Detected: Malformed packet detected. TCP '
+                    'header length is malformed.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80'
+                ],
+            )
+
+    def test_malformed_packet_malformed_length_and_protocol(self):
+        with self.assertLogs() as log:
+            malformed_pkt = IP(dst="127.0.0.1", ihl=5, len=7000, proto=255) / TCP(dport=80, dataofs=5)
+            main.packet_handler(malformed_pkt)
+            self.assertEqual(
+                log.output,
+                [
+                    'WARNING:root:Malicious Packet Detected: Invalid IP checksum.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80',
+                    'WARNING:root:Malicious Packet Detected: Invalid TCP checksum.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80',
+                    'WARNING:root:Malicious Packet Detected: Malformed packet detected. Total '
+                    'length does not equal actual length.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80',
+                    'WARNING:root:Malicious Packet Detected: Malformed packet detected. Protocol '
+                    'number is reserved.\n'
+                    'MAC Address of malicious agent: N/A\n'
+                    'Source IP: 127.0.0.1, Destination IP: 127.0.0.1\n'
+                    'Source Port: 20, Destination Port: 80'
                 ],
             )
