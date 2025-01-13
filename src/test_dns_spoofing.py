@@ -28,7 +28,9 @@ class TestDnsSpoofing(unittest.TestCase):
                     ),
                 )
             )
-            main.dns_spoofing(dns_response_packet)
+            dns_response_packet[IP].chksum = IP(bytes(dns_response_packet[IP])).chksum
+            dns_response_packet[UDP].chksum = UDP(bytes(dns_response_packet[UDP])).chksum
+            main.packet_handler(dns_response_packet)
             self.assertEqual(
                 log.output,
                 [
