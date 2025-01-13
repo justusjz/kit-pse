@@ -6,7 +6,7 @@ from scapy.all import sniff
 from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
-from scapy.layers.dns import DNS, DNSQR, DNSRR
+from scapy.layers.dns import DNS
 
 import signature
 import requests
@@ -232,7 +232,6 @@ def packet_handler(packet):
         syn_fin(packet)
         fin_rst(packet)
         rst_syn(packet)
-        fin_rst(packet)
         xmas(packet)
         null_packet(packet)
         port_check(packet)
