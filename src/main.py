@@ -9,7 +9,7 @@ from scapy.layers.inet6 import IPv6
 
 import signature
 
-db = signature.SignatureDb("signatures.json")
+# db = signature.SignatureDb("signatures.json")
 
 # Configure the logger
 LOG_FILE = "packet_logs.log"  # File where logs will be saved
@@ -32,9 +32,9 @@ last_reset = time.time()  # reset timer for icmp flood
 def ip_spoofing(packet, src_ip: str):
     if src_ip not in reserved_ips:
         if (
-                src_ip.startswith("10.")
-                or src_ip.startswith("192.168.")
-                or src_ip.startswith("169.254.")
+            src_ip.startswith("10.")
+            or src_ip.startswith("192.168.")
+            or src_ip.startswith("169.254.")
         ):
             log_malicious_packet(
                 packet, "Possible IP spoofing using private networks detected."
@@ -154,21 +154,39 @@ def malformed_packet(packet):
         maximum_length = 65535
         if header_length is None or total_length is None:
             pass
-        elif header_length > maximum_header_length or header_length < minimum_header_length:
-            log_malicious_packet(packet, "Malformed packet detected. IP header length is malformed.")
+        elif (
+            header_length > maximum_header_length
+            or header_length < minimum_header_length
+        ):
+            log_malicious_packet(
+                packet, "Malformed packet detected. IP header length is malformed."
+            )
         elif total_length > maximum_length:
-            log_malicious_packet(packet, "Malformed packet detected. Total length exceeds maximum length.")
+            log_malicious_packet(
+                packet,
+                "Malformed packet detected. Total length exceeds maximum length.",
+            )
         elif total_length != actual_length:
-            log_malicious_packet(packet, "Malformed packet detected. Total length does not equal actual length.")
+            log_malicious_packet(
+                packet,
+                "Malformed packet detected. Total length does not equal actual length.",
+            )
         protocol_number = packet[IP].proto
         if protocol_number == 255:
-            log_malicious_packet(packet, "Malformed packet detected. Protocol number is reserved.")
+            log_malicious_packet(
+                packet, "Malformed packet detected. Protocol number is reserved."
+            )
     if TCP in packet:
         header_length = packet[TCP].dataofs
         if header_length is None:
             pass
-        elif header_length > maximum_header_length or header_length < minimum_header_length:
-            log_malicious_packet(packet, "Malformed packet detected. TCP header length is malformed.")
+        elif (
+            header_length > maximum_header_length
+            or header_length < minimum_header_length
+        ):
+            log_malicious_packet(
+                packet, "Malformed packet detected. TCP header length is malformed."
+            )
 
 
 def packet_handler(packet):
@@ -186,9 +204,9 @@ def packet_handler(packet):
         null_packet(packet)
         port_check(packet)
 
-    match = db.detect(packet.__bytes__())
-    if match != None:
-        log_malicious_packet(packet, match)
+    # match = db.detect(packet.__bytes__())
+    # if match != None:
+    #    log_malicious_packet(packet, match)
     checksum_check(packet)
     malformed_packet(packet)
     logging.debug(f"Captured Packet: {packet.summary()}\n")
