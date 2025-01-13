@@ -9,11 +9,14 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.dns import DNS, DNSQR, DNSRR
 
 from tcp import tcp_connections, TcpConnection
+from scapy.packet import Packet
 
 import signature
 import requests
+import fragment
 
 db = signature.SignatureDb("signatures.json")
+frag_checker = fragment.FragmentChecker()
 
 # Configure the logger
 LOG_FILE = "packet_logs.log"  # File where logs will be saved
@@ -278,6 +281,25 @@ def dns_spoofing(packet):
                         )
 
 
+def fragment_overlap_check(packet: Packet):
+    src = packet[IP].src
+    dst = packet[IP].dst
+    frag_id = packet[IP].id
+    # fragment size is measured in multiples of 8 octets
+    frag_size = len(packet[IP].payload) / 8
+    frag_offset = packet[IP].frag
+    more_frags = "MF" in packet.flags
+    if more_frags or frag_offset > 0:
+        # this packet is fragmented, because either:
+        # more fragments after this one
+        # frag_offset > 0, so there were already fragments
+        result = frag_checker.check(
+            src, dst, frag_id, frag_size, frag_offset, more_frags
+        )
+        if result != None:
+            log_malicious_packet(packet, result)
+
+
 def packet_handler(packet):
     if ARP in packet:
         arp_spoofing(packet)
@@ -287,6 +309,7 @@ def packet_handler(packet):
         ip_spoofing(packet, src_ip)
         destination_check(packet)
         icmp_flood(packet)
+        fragment_overlap_check(packet[IP])
 
     if TCP in packet:
         tcp_handshake_check(packet)
