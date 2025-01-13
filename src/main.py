@@ -221,40 +221,6 @@ def dns_spoofing(packet):
                         )
 
 
-def fetch_blocklist_ips():
-    """Fetches suspicious ips from blocklist.de from the last 12 hours,
-    and returns them as a list"""
-    url = "https://api.blocklist.de/getlast.php?time=12:00"
-    try:
-        print("[INFO] Load IP-List from Blocklist.de....")
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        ip_list = response.text.strip().split("\n")
-        return ip_list
-    except requests.RequestException as e:
-        print(f"[ERROR] Failed fetching the Blocklist.de IPs: {e}")
-        return []
-
-
-def dns_spoofing(packet):
-    if DNS in packet:
-        dns_layer = packet[DNS]
-        if dns_layer.qr == 1:  # qr = 1 means response
-
-            for i in range(dns_layer.ancount):  # package can have multiple responses
-                dns_record = dns_layer.an[i]
-
-                if dns_record.type == 1:  # A record
-                    answered_ip = dns_record.rdata
-                    if answered_ip in malicious_ips:
-                        log_malicious_packet(
-                            packet,
-                            f"Suspicious DNS response detected!\n"
-                            f"Domain: {dns_record.rrname.decode(errors='ignore')}\n"
-                            f"Malicious IP: {answered_ip}",
-                        )
-
-
 def packet_handler(packet):
     if IP in packet:
         src_ip = packet[IP].src
