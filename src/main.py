@@ -1,11 +1,13 @@
+import http
 import logging
 import time
 from collections import defaultdict
 
-from scapy.all import sniff
+from scapy.all import *
 from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
+from scapy.layers.http import *
 
 import signature
 
@@ -32,9 +34,9 @@ last_reset = time.time()  # reset timer for icmp flood
 def ip_spoofing(packet, src_ip: str):
     if src_ip not in reserved_ips:
         if (
-            src_ip.startswith("10.")
-            or src_ip.startswith("192.168.")
-            or src_ip.startswith("169.254.")
+                src_ip.startswith("10.")
+                or src_ip.startswith("192.168.")
+                or src_ip.startswith("169.254.")
         ):
             log_malicious_packet(
                 packet, "Possible IP spoofing using private networks detected."
@@ -142,6 +144,29 @@ def checksum_check(packet):
         ).chksum  # Scapy recalculates the checksum
         if original_checksum != recalculated_checksum:
             log_malicious_packet(packet, "Invalid TCP checksum.")
+
+
+def content_lenght_check(packet):
+    if packet.haslayer(http.HTTPRequest) and packet.haslayer(Raw):
+
+        raw_data = packet[Raw].load.decode('utf-8', errors='ignore')  # Extract raw data
+        headers = raw_data.split('\r\n')
+        content_length = None
+        for header in headers:
+            if header.lower().startswith('content-length:'):
+                try:
+                    content_length = int(header.split(':')[1].strip())
+                except ValueError:
+                    return
+        if content_length is None:
+            return
+        header_end = raw_data.find('\r\n\r\n')
+        if header_end == -1:
+            return
+
+        payload_size = len(packet[Raw].load) - (header_end + 4)
+        if content_length != payload_size:
+            log_malicious_packet(packet, "Content length mismatch.")
 
 
 def packet_handler(packet):
