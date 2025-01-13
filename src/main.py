@@ -7,6 +7,8 @@ from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
 
+from tcp import tcp_connections, TcpConnection
+
 import signature
 
 db = signature.SignatureDb("signatures.json")
@@ -117,6 +119,45 @@ def icmp_flood(packet, reset_interval=ICM_TIMEINTERVAL, threshold=ICM_THRESHOLD)
             log_malicious_packet(packet, "Potential ICMP flood detected.")
 
 
+def tcp_handshake_check(packet):
+    # order the IPs and ports to make them unique per connection
+    if IP in packet:
+        src = min(packet[IP].src, packet[IP].dst)
+        dst = min(packet[IP].src, packet[IP].dst)
+    else:
+        src = min(packet[IPv6].src, packet[IPv6].dst)
+        dst = min(packet[IPv6].src, packet[IPv6].dst)
+    sport = min(packet[TCP].sport, packet[TCP].dport)
+    dport = max(packet[TCP].sport, packet[TCP].dport)
+    key = (src, dst, sport, dport)
+    if key in tcp_connections:
+        connection = tcp_connections[key]
+    else:
+        connection = TcpConnection()
+        tcp_connections[key] = connection
+    # check that the TCP handshake is correct
+    # when we detect an error, log it, and mark the connection
+    # as acknowledged, so we don't spam errors
+    if connection.state == "initial":
+        if packet[TCP].flags == "S":
+            connection.state = "syn"
+        else:
+            log_malicious_packet(packet, "Invalid TCP handshake flags (expected S)")
+            connection.state = "ack"
+    elif connection.state == "syn":
+        if packet[TCP].flags == "SA":
+            connection.state = "synack"
+        else:
+            log_malicious_packet(packet, "Invalid TCP handshake flags (expected SA)")
+            connection.state = "ack"
+    elif connection.state == "synack":
+        if packet[TCP].flags == "A":
+            connection.state = "ack"
+        else:
+            log_malicious_packet(packet, "Invalid TCP handshake flags (expected A)")
+            connection.state = "ack"
+
+
 def checksum_check(packet):
     if IP in packet:
         # packet = IP(dst="10.11.12.13", src="10.11.12.14")/UDP(chksum=0)/DNS()
@@ -191,6 +232,7 @@ def packet_handler(packet):
         icmp_flood(packet)
 
     if TCP in packet:
+        tcp_handshake_check(packet)
         syn_fin(packet)
         fin_rst(packet)
         rst_syn(packet)
