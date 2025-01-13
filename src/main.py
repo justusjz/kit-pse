@@ -9,7 +9,7 @@ from scapy.layers.inet6 import IPv6
 
 import signature
 
-# db = signature.SignatureDb("signatures.json")
+db = signature.SignatureDb("signatures.json")
 
 # Configure the logger
 LOG_FILE = "packet_logs.log"  # File where logs will be saved
@@ -204,9 +204,9 @@ def packet_handler(packet):
         null_packet(packet)
         port_check(packet)
 
-    # match = db.detect(packet.__bytes__())
-    # if match != None:
-    #    log_malicious_packet(packet, match)
+    match = db.detect(packet.__bytes__())
+    if match != None:
+        log_malicious_packet(packet, match)
     checksum_check(packet)
     malformed_packet(packet)
     logging.debug(f"Captured Packet: {packet.summary()}\n")
