@@ -190,7 +190,7 @@ def malformed_packet(packet):
 def fetch_blocklist_ips():
     """Fetches suspicious ips from blocklist.de from the last 12 hours,
     and returns them as a list"""
-    url = "https://api.blocklist.de/getlast.php?time=12:00"
+    url = "https://api.blocklist.de/getlast.php?time=00:00"
     try:
         print("[INFO] Load IP-List from Blocklist.de....")
         response = requests.get(url, timeout=10)
@@ -232,7 +232,6 @@ def packet_handler(packet):
         syn_fin(packet)
         fin_rst(packet)
         rst_syn(packet)
-        fin_rst(packet)
         xmas(packet)
         null_packet(packet)
         port_check(packet)
