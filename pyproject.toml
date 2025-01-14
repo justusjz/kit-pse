@@ -7,5 +7,6 @@ requires-python = ">=3.10.15"
 dependencies = [
     "black>=24.10.0",
     "python-dotenv>=1.0.1",
+    "requests>=2.32.3",
     "scapy>=2.6.1",
 ]
