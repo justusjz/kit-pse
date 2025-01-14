@@ -1,21 +1,24 @@
 import logging
 import time
 from collections import defaultdict
+import os
+import src
 
 from scapy.all import sniff
 from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
 
-import signature
+import src.signature as signature
 
 db = signature.SignatureDb("signatures.json")
 
 # Configure the logger
-LOG_FILE = "packet_logs.log"  # File where logs will be saved
+LOG_FILE = "run.log"  # File where logs will be saved
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
     filename=LOG_FILE,
-    level=logging.DEBUG,
+    level=LOG_LEVEL,
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
@@ -163,7 +166,7 @@ def packet_handler(packet):
     if match != None:
         log_malicious_packet(packet, match)
     checksum_check(packet)
-    logging.debug(f"Captured Packet: {packet.summary()}\n")
+    logging.debug(f"Captured Packet: {packet.summary()}")
 
 
 def log_malicious_packet(packet, warning: str):
@@ -179,6 +182,10 @@ def log_malicious_packet(packet, warning: str):
 
 
 def main():
+    if os.getenv("CLEAR_LOG") == "True":
+        with open(LOG_FILE, "w") as log_file:
+            log_file.truncate(0)
+
     print("Starting packet capture... Logs will be saved to:", LOG_FILE)
     logging.info("Starting packet capture...")
     sniff(prn=packet_handler, store=False)
