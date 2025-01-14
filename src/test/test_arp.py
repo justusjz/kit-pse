@@ -1,6 +1,6 @@
 import unittest
-import main
-from scapy.layers.all import ARP
+import src.main as main
+from scapy.layers.l2 import ARP
 from scapy.layers.inet import Ether
 
 

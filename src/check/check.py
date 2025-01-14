@@ -1,9 +1,7 @@
-class Checker:
-    def __init__(self):
-        self.checks = (
+from abc import ABC, abstractmethod
 
-        )
 
-    def check(self):
-        for check in self.checks:
-            Checker.check()
+class Check(ABC):
+    @abstractmethod
+    def check(self, packet):
+        pass

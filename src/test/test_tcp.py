@@ -2,13 +2,12 @@ import unittest
 import src.main as main
 import time
 from scapy.layers.inet import ICMP, IP, TCP
-from test_utils import send_test_tcp_packet
+from src.test.test_utils import send_test_tcp_packet
 
-from tcp import tcp_handshake_ignore
+from src.test.tcp import tcp_handshake_ignore
 
 
 class TestTCP(unittest.TestCase):
-    def test_null_packet(self):
     def test_handshake_negative(self):
         with self.assertNoLogs():
             send_test_tcp_packet(
