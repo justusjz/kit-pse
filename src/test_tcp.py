@@ -1,14 +1,47 @@
 import unittest
 
-from scapy.layers.l2 import Ether
-from scapy.packet import Raw
-
 import main
 import time
 from scapy.layers.inet import ICMP, IP, TCP
+from test_utils import send_test_tcp_packet
+
+from tcp import tcp_handshake_ignore
 
 
 class TestTCP(unittest.TestCase):
+    def test_handshake_negative(self):
+        with self.assertNoLogs():
+            send_test_tcp_packet(
+                IP(src="1.2.3.4", dst="5.6.7.8") / TCP(sport=44485, dport=80, flags="S")
+            )
+            send_test_tcp_packet(
+                IP(
+                    src="5.6.7.8",
+                    dst="1.2.3.4",
+                )
+                / TCP(sport=80, dport=44485, flags="SA")
+            )
+            send_test_tcp_packet(
+                IP(src="1.2.3.4", dst="5.6.7.8") / TCP(sport=44485, dport=80, flags="A")
+            )
+
+    def test_handshake_positive(self):
+        with self.assertLogs() as log:
+            send_test_tcp_packet(
+                IP(src="1.2.3.4", dst="9.10.11.12")
+                / TCP(sport=44486, dport=80, flags="SA")
+            )
+            self.assertEqual(
+                log.output,
+                [
+                    "WARNING:root:Malicious Packet Detected: Invalid TCP handshake flags "
+                    "(expected S)\n"
+                    "MAC Address of malicious agent: N/A\n"
+                    "Source IP: 1.2.3.4, Destination IP: 9.10.11.12\n"
+                    "Source Port: 44486, Destination Port: 80"
+                ],
+            )
+
     def test_null(self):
         with self.assertLogs() as log:
             null_pkt = IP(dst="127.0.0.1") / TCP(dport=80, flags=0)
@@ -94,6 +127,9 @@ class TestTCP(unittest.TestCase):
 
     def test_malformed_packet_malformed_header(self):
         with self.assertLogs() as log:
+            # we're not performing a valid TCP handshake here,
+            # so we need to ignore that check for now
+            tcp_handshake_ignore("127.0.0.1", "127.0.0.1", 20, 80)
             malformed_pkt = IP(dst="127.0.0.1", ihl=16, len=1000) / TCP(
                 dport=80, dataofs=16
             )
