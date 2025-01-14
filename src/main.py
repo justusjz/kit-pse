@@ -6,8 +6,10 @@ from scapy.all import sniff
 from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.inet import Ether
 from scapy.layers.inet6 import IPv6
+from scapy.layers.dns import DNS, DNSQR, DNSRR
 
 import signature
+import requests
 
 db = signature.SignatureDb("signatures.json")
 
@@ -27,6 +29,8 @@ ICM_TIMEINTERVAL = 60
 reserved_ips = ["192.168.1.4", "192.168.1.1", "192.168.1.7", "172.16.0.3"]
 icmp_count = defaultdict(int)
 last_reset = time.time()  # reset timer for icmp flood
+
+malicious_ips = set([])
 
 
 def ip_spoofing(packet, src_ip: str):
@@ -183,6 +187,40 @@ def malformed_packet(packet):
             )
 
 
+def fetch_blocklist_ips():
+    """Fetches suspicious ips from blocklist.de from the last 12 hours,
+    and returns them as a list"""
+    url = "https://api.blocklist.de/getlast.php?time=00:00"
+    try:
+        print("[INFO] Load IP-List from Blocklist.de....")
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        ip_list = response.text.strip().split("\n")
+        return ip_list
+    except requests.RequestException as e:
+        print(f"[ERROR] Failed fetching the Blocklist.de IPs: {e}")
+        return []
+
+
+def dns_spoofing(packet):
+    if DNS in packet:
+        dns_layer = packet[DNS]
+        if dns_layer.qr == 1:  # qr = 1 means response
+
+            for i in range(dns_layer.ancount):  # package can have multiple responses
+                dns_record = dns_layer.an[i]
+
+                if dns_record.type == 1:  # A record
+                    answered_ip = dns_record.rdata
+                    if answered_ip in malicious_ips:
+                        log_malicious_packet(
+                            packet,
+                            f"Suspicious DNS response detected!\n"
+                            f"Domain: {dns_record.rrname.decode(errors='ignore')}\n"
+                            f"Malicious IP: {answered_ip}",
+                        )
+
+
 def packet_handler(packet):
     if IP in packet:
         src_ip = packet[IP].src
@@ -202,6 +240,7 @@ def packet_handler(packet):
     if match != None:
         log_malicious_packet(packet, match)
     checksum_check(packet)
+    dns_spoofing(packet)
     malformed_packet(packet)
     logging.debug(f"Captured Packet: {packet.summary()}\n")
 
@@ -219,6 +258,7 @@ def log_malicious_packet(packet, warning: str):
 
 
 def main():
+    malicious_ips.update(set(fetch_blocklist_ips()))  # fetch malicious ips
     print("Starting packet capture... Logs will be saved to:", LOG_FILE)
     logging.info("Starting packet capture...")
     sniff(prn=packet_handler, store=False)
