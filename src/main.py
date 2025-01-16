@@ -146,10 +146,10 @@ def checksum_check(packet):
             log_malicious_packet(packet, "Invalid TCP checksum.")
 
 
-def content_lenght_check(packet):
-    if packet.haslayer(http.HTTPRequest) and packet.haslayer(Raw):
+def content_length_check(packet):
+    if packet.haslayer(TCP) and packet.haslayer(Raw):
 
-        raw_data = packet[Raw].load.decode('utf-8', errors='ignore')  # Extract raw data
+        raw_data = packet[Raw].load.decode('utf-8', errors='ignore')
         headers = raw_data.split('\r\n')
         content_length = None
         for header in headers:
@@ -166,8 +166,7 @@ def content_lenght_check(packet):
 
         payload_size = len(packet[Raw].load) - (header_end + 4)
         if content_length != payload_size:
-            log_malicious_packet(packet, "Content length mismatch.")
-
+            log_malicious_packet(packet, "Content-Length mismatch detected.")
 
 def packet_handler(packet):
     if IP in packet:
