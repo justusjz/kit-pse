@@ -1,0 +1,6 @@
+K Nearest Neighbor: 133/98804 points mislabeled (99.86539006517955% correct)
+Categorical Naive Bayes: 1259/98804 points mislabeled (98.72576009068459% correct)
+Combined KNN and Categorical Naive Bayes: 101/98804 points mislabeled (99.8977774179183% correct)
+Gaussian Naive Bayes: 4941/98804 points mislabeled (94.99919031618153% correct)
+Combined Naive Bayes: 496/98804 points mislabeled (99.4979960325493% correct)
+Combined Naive Bayes 2: 17873/98804 points mislabeled (81.91065139063195% correct)
