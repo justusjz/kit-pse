@@ -35,6 +35,8 @@ directly.
 ## Run and Debug Code in IDE
 
 To run the python script on Linux without permission problem and to have possibility to debug the code using IDE functions you should give python interpreter the privileges to run scripts in sudo mode. Run this command inside your directory:
+
+!! Run this command locally **only**. It gives admin privileges to pyton interpreter.
 ```bash
 sudo chmod +s .venv/bin/python
 ```

@@ -7,3 +7,5 @@ prepare:
 	mkdir -p out tmp
 format:
 	latexindent -m -l reports/latexindent.yaml -w reports/specification.tex
+test:
+	python -m unittest discover src

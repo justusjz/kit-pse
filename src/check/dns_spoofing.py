@@ -3,6 +3,7 @@ from src.logger import Logger
 from scapy.layers.dns import DNS
 import requests
 
+
 class DnsSpoofing(Check):
     __malicious_ips = set([])
 
@@ -16,7 +17,7 @@ class DnsSpoofing(Check):
             if dns_layer.qr == 1:  # qr = 1 means response
 
                 for i in range(
-                        dns_layer.ancount
+                    dns_layer.ancount
                 ):  # package can have multiple responses
                     dns_record = dns_layer.an[i]
 
@@ -48,3 +49,7 @@ class DnsSpoofing(Check):
         except requests.RequestException as e:
             Logger.log_error(f"Failed fetching the Blocklist.de IPs: {e}")
             return []
+
+    @classmethod
+    def get_malicious_ips(cls):
+        return cls.__malicious_ips

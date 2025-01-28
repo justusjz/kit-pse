@@ -16,7 +16,7 @@ class Logger:
     )
 
     @classmethod
-    def log(cls, message:str):
+    def log(cls, message: str):
         logging.info(message)
 
     @classmethod
