@@ -26,4 +26,4 @@ jobs:
           uv sync
 
       - name: Run tests
-        run: uv python -m unittest discover src
+        run: uv run -m unittest discover src
