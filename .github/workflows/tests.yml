@@ -1,4 +1,4 @@
-name: Run Tests
+name: Run Unit Tests
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +25,8 @@ jobs:
           uv venv
           uv sync
 
-      - name: Run tests
+      - name: Unit tests
         run: uv run -m unittest discover src
+
+      - name: Black Formating
+        run: uv run black --check src/
