@@ -20,7 +20,7 @@ def main():
             log_file.truncate(0)
     print(
         "Starting packet capture... Logs will be saved to:", Logger.get_log_file_name()
-    )
+     )
     logging.info("Starting packet capture...")
     sniff(prn=packet_handler, store=False)
     logging.info("Packet capture completed.\n\n")
