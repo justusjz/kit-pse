@@ -1,6 +1,7 @@
 out
 tmp
 .venv
+.env
 packet_logs.log
-src/python-main.sh
 __pycache__
+run.log

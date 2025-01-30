@@ -21,12 +21,34 @@ the Python script using administrator permissions.
 To run tests, simply do:
 
 ```bash
-uv run test.py
+uv run -m unittest discover src
+```
+
+or
+
+```bash
+python -m unittest discover src
 ```
 
 in the root directory. The tests do not need root permissions, since they don't
 actually send any packets over the network interface, they just call the handler
 directly.
+
+## Run and Debug Code in IDE
+
+To run the python script on Linux without permission problem and to have
+possibility to debug the code using IDE functions you should give python
+interpreter the privileges to run scripts in sudo mode. Run this command inside
+your directory:
+
+WARNING: Running this is equivalent to allowing `sudo` without a password, so it
+gives every program you run root permissions. While this may be justifiable in a
+development environment, it's still a major security risk. Consider your threat
+model and use best judgment.
+
+```bash
+sudo chmod +s .venv/bin/python
+```
 
 ## Reports
 
