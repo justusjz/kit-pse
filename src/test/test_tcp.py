@@ -1,11 +1,10 @@
 import unittest
-
-import main
+import src.main as main
 import time
 from scapy.layers.inet import ICMP, IP, TCP
-from test_utils import send_test_tcp_packet
+from src.test.test_utils import send_test_tcp_packet
 
-from tcp import tcp_handshake_ignore
+from src.test.tcp import tcp_handshake_ignore
 
 
 class TestTCP(unittest.TestCase):
@@ -91,7 +90,7 @@ class TestTCP(unittest.TestCase):
                 ],
             )
 
-    def test_xmas(self):
+    def test_xmas_scan(self):
         with self.assertLogs() as log:
             xmas_pkt = IP(dst="127.0.0.1") / TCP(dport=80, flags="FPU")
             xmas_pkt[IP].chksum = IP(bytes(xmas_pkt[IP])).chksum

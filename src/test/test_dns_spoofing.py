@@ -1,18 +1,24 @@
 import unittest
-import main
+import src.main as main
+from src.check.dns_spoofing import DnsSpoofing
 from scapy.layers.inet import IP, UDP
 from scapy.layers.dns import DNS, DNSQR, DNSRR
+import socket
 
 
 class TestDnsSpoofing(unittest.TestCase):
     def test_malicious_dns_response(self):
+        DnsSpoofing.update_malicious_ips()
         with self.assertLogs() as log:
-            main.malicious_ips.update(main.fetch_blocklist_ips())
-
-            if main.malicious_ips:
-                malicious_ip = next(iter(main.malicious_ips))
-            else:
-                malicious_ip = "10.10.10.10"
+            while True:
+                try:
+                    # get the next IP address, and check whether its valid
+                    malicious_ip = next(iter(DnsSpoofing.get_malicious_ips()))
+                    socket.inet_aton(malicious_ip)
+                    break
+                except:
+                    # repeat until we get a good one
+                    pass
             dns_response_packet = (
                 IP(src="127.0.0.1", dst="127.0.0.1")
                 / UDP(sport=53, dport=7753)
