@@ -5,10 +5,15 @@ from src.utils.fragment import FragmentChecker
 
 
 class FragmentOverlap(Check):
+    __frag_checker: FragmentChecker
+
+    @classmethod
+    def init(cls):
+        FragmentOverlap.__frag_checker = FragmentChecker()
+
     @classmethod
     def check(cls, packet):
         packet = packet[IP]
-        frag_checker = FragmentChecker()
         src = packet[IP].src
         dst = packet[IP].dst
         frag_id = packet[IP].id
@@ -20,7 +25,7 @@ class FragmentOverlap(Check):
             # this packet is fragmented, because either:
             # more fragments after this one
             # frag_offset > 0, so there were already fragments
-            result = frag_checker.check(
+            result = FragmentOverlap.__frag_checker.check(
                 src, dst, frag_id, frag_size, frag_offset, more_frags
             )
             if result is not None:

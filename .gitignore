@@ -4,3 +4,4 @@ tmp
 .env
 packet_logs.log
 __pycache__
+run.log
