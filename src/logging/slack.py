@@ -2,17 +2,17 @@ import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-class SlackClient():
+
+class SlackClient:
     def __init__(self):
         self.client = WebClient(token=os.getenv("SLACK_TOKEN"))
 
-    def send_message(self, message: str, channel: str = os.getenv("SLACK_CHANNEL_NAME")):
+    def send_message(
+        self, message: str, channel: str = os.getenv("SLACK_CHANNEL_NAME")
+    ):
         message_blocks = self.format_malicious_packet_message(message)
         try:
-            self.client.chat_postMessage(
-                channel=channel,
-                blocks=message_blocks
-            )
+            self.client.chat_postMessage(channel=channel, blocks=message_blocks)
         except SlackApiError as e:
             print(f"Error sending message: {e.response['error']}")
 
@@ -40,66 +40,53 @@ class SlackClient():
                 "text": {
                     "type": "plain_text",
                     "text": f"🚨 {header} 🚨",
-                    "emoji": True
-                }
+                    "emoji": True,
+                },
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "Possible *IP spoofing using private networks* detected."
-                }
+                    "text": "Possible *IP spoofing using private networks* detected.",
+                },
             },
+            {"type": "divider"},
             {
-                "type": "divider"
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*MAC Address:*\n`{mac_address}`"},
+                    {"type": "mrkdwn", "text": f"*Source IP:*\n`{source_ip}`"},
+                ],
             },
             {
                 "type": "section",
                 "fields": [
                     {
                         "type": "mrkdwn",
-                        "text": f"*MAC Address:*\n`{mac_address}`"
+                        "text": f"*Destination IP:*\n`{destination_ip}`",
                     },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Source IP:*\n`{source_ip}`"
-                    }
-                ]
+                    {"type": "mrkdwn", "text": f"*Source Port:*\n`{source_port}`"},
+                ],
             },
             {
                 "type": "section",
                 "fields": [
                     {
                         "type": "mrkdwn",
-                        "text": f"*Destination IP:*\n`{destination_ip}`"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Source Port:*\n`{source_port}`"
+                        "text": f"*Destination Port:*\n`{destination_port}`",
                     }
-                ]
+                ],
             },
-            {
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Destination Port:*\n`{destination_port}`"
-                    }
-                ]
-            },
-            {
-                "type": "divider"
-            },
+            {"type": "divider"},
             {
                 "type": "context",
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": "⚠️ Please investigate this issue immediately."
+                        "text": "⚠️ Please investigate this issue immediately.",
                     }
-                ]
-            }
+                ],
+            },
         ]
 
         return blocks
