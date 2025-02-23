@@ -1,6 +1,5 @@
 from src.check.check import Check
-from src.logger import Logger
-from scapy.layers.inet import TCP
+from src.logging.logger import Logger
 from src.utils import signature
 
 

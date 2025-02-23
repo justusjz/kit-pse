@@ -1,17 +1,15 @@
 import os
-import logging
 
-from scapy.all import sniff
-
-from src.logger import Logger
 from src.checker import Checker
+from scapy.all import sniff
+from src.logging.logger import Logger
 
 checker = Checker()
 
 
 def packet_handler(packet):
     checker.check(packet)
-    logging.debug(f"Captured Packet: {packet.summary()}\n")
+    Logger.debug(f"Captured Packet: {packet.summary()}\n")
 
 
 def main():
@@ -21,9 +19,9 @@ def main():
     print(
         "Starting packet capture... Logs will be saved to:", Logger.get_log_file_name()
     )
-    logging.info("Starting packet capture...")
+    Logger.info("Starting packet capture...")
     sniff(prn=packet_handler, store=False)
-    logging.info("Packet capture completed.\n\n")
+    Logger.info("Packet capture completed.\n\n")
 
 
 if __name__ == "__main__":
