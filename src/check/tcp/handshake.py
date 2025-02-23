@@ -1,5 +1,5 @@
 from src.check.check import Check
-from src.logger import Logger
+from src.logging.logger import Logger
 from scapy.layers.inet import IP, TCP
 from scapy.layers.inet6 import IPv6
 from src.test.tcp import tcp_connections, TcpConnection
