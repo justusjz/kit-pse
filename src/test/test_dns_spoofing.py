@@ -10,10 +10,11 @@ class TestDnsSpoofing(unittest.TestCase):
     def test_malicious_dns_response(self):
         DnsSpoofing.update_malicious_ips()
         with self.assertLogs() as log:
+            ips = iter(DnsSpoofing.get_malicious_ips())
             while True:
                 try:
                     # get the next IP address, and check whether its valid
-                    malicious_ip = next(iter(DnsSpoofing.get_malicious_ips()))
+                    malicious_ip = next(ips)
                     socket.inet_aton(malicious_ip)
                     break
                 except:
