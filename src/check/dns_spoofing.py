@@ -39,7 +39,7 @@ class DnsSpoofing(Check):
     def __fetch_blocklist_ips():
         """Fetches suspicious ips from blocklist.de from the last 12 hours,
         and returns them as a list"""
-        url = "https://api.blocklist.de/getlast.php?time=00:00"
+        url = "https://api.blocklist.de/getlast.php?time="
         try:
             Logger.info("Load IP-List from Blocklist.de....")
             response = requests.get(url, timeout=10)
