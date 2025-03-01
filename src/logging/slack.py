@@ -50,7 +50,10 @@ class SlackClient:
                 info_block = {
                     "type": "section",
                     "fields": [
-                        {"type": "mrkdwn", "text": f"*{i.split(': ')[0]}:*\t`{' '.join(i.split(': ')[1:])}`"},
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*{i.split(': ')[0]}:*\t`{' '.join(i.split(': ')[1:])}`",
+                        },
                     ],
                 }
                 blocks.append(info_block)
