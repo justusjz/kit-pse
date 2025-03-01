@@ -12,7 +12,11 @@ class SlackClient:
     ):
         message_blocks = self.format_malicious_packet_message(message)
         try:
-            self.client.chat_postMessage(channel=channel, blocks=message_blocks)
+            self.client.chat_postMessage(
+                channel=channel,
+                blocks=message_blocks,
+                text="Error, message was not generated",
+            )
         except SlackApiError as e:
             print(f"Error sending message: {e.response['error']}")
 
@@ -25,13 +29,8 @@ class SlackClient:
         :return: A dictionary containing Slack Block Kit blocks.
         """
         # Parse the raw message
-        lines = raw_message.split("\n")
-        header = lines[0].strip()
-        mac_address = lines[1].split(": ")[1].strip()
-        source_ip = lines[2].split(": ")[1].split(", ")[0].strip()
-        destination_ip = lines[2].split(": ")[2].strip()
-        source_port = lines[3].split(": ")[1].split(", ")[0].strip()
-        destination_port = lines[3].split(": ")[2].strip()
+        infos = raw_message.split("\n")
+        header = infos[0].strip()
 
         # Create Block Kit blocks
         blocks = [
@@ -43,50 +42,32 @@ class SlackClient:
                     "emoji": True,
                 },
             },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Possible *IP spoofing using private networks* detected.",
-                },
-            },
             {"type": "divider"},
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*MAC Address:*\n`{mac_address}`"},
-                    {"type": "mrkdwn", "text": f"*Source IP:*\n`{source_ip}`"},
-                ],
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Destination IP:*\n`{destination_ip}`",
-                    },
-                    {"type": "mrkdwn", "text": f"*Source Port:*\n`{source_port}`"},
-                ],
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Destination Port:*\n`{destination_port}`",
-                    }
-                ],
-            },
-            {"type": "divider"},
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": "⚠️ Please investigate this issue immediately.",
-                    }
-                ],
-            },
         ]
+
+        for info in infos[1:]:
+            for i in info.split(", "):
+                info_block = {
+                    "type": "section",
+                    "fields": [
+                        {"type": "mrkdwn", "text": f"*{i.split(': ')[0]}:*\t`{' '.join(i.split(': ')[1:])}`"},
+                    ],
+                }
+                blocks.append(info_block)
+
+        blocks.extend(
+            [
+                {"type": "divider"},
+                {
+                    "type": "context",
+                    "elements": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "⚠️ Please investigate this issue immediately.",
+                        }
+                    ],
+                },
+            ]
+        )
 
         return blocks
