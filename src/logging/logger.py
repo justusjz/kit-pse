@@ -3,6 +3,7 @@ import os
 
 from scapy.layers.inet import IP, TCP, UDP, Ether
 from scapy.layers.inet6 import IPv6
+from src.logging.slack import SlackClient
 
 
 class Logger:
@@ -14,13 +15,18 @@ class Logger:
         format="%(asctime)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+    __slack_logger = SlackClient()
 
     @classmethod
-    def log(cls, message: str):
+    def info(cls, message: str):
         logging.info(message)
 
     @classmethod
-    def log_error(cls, message):
+    def debug(cls, message: str):
+        logging.debug(message)
+
+    @classmethod
+    def error(cls, message):
         logging.error(message)
 
     @classmethod
@@ -33,7 +39,9 @@ class Logger:
             f"Source Port: {packet[TCP].sport if TCP in packet else packet[UDP].sport if UDP in packet else 'N/A'}, "
             f"Destination Port: {packet[TCP].dport if TCP in packet else packet[UDP].dport if UDP in packet else 'N/A'}",
         ]
-        logging.warning("\n".join(log_details))
+        log_message = "\n".join(log_details)
+        logging.warning(log_message)
+        cls.__slack_logger.send_message(log_message)
 
     @classmethod
     def get_log_file_name(cls) -> str:

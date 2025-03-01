@@ -1,5 +1,5 @@
 from src.check.check import Check
-from src.logger import Logger
+from src.logging.logger import Logger
 from scapy.layers.dns import DNS
 import requests
 
@@ -39,15 +39,15 @@ class DnsSpoofing(Check):
     def __fetch_blocklist_ips():
         """Fetches suspicious ips from blocklist.de from the last 12 hours,
         and returns them as a list"""
-        url = "https://api.blocklist.de/getlast.php?time=00:00"
+        url = "https://api.blocklist.de/getlast.php?time="
         try:
-            Logger.log("Load IP-List from Blocklist.de....")
+            Logger.info("Load IP-List from Blocklist.de....")
             response = requests.get(url, timeout=10)
             response.raise_for_status()
             ip_list = response.text.strip().split("\n")
             return ip_list
         except requests.RequestException as e:
-            Logger.log_error(f"Failed fetching the Blocklist.de IPs: {e}")
+            Logger.error(f"Failed fetching the Blocklist.de IPs: {e}")
             return []
 
     @classmethod
