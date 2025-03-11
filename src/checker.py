@@ -20,7 +20,7 @@ class Checker:
     def __init__(self):
         DnsSpoofing.update_malicious_ips()
         FragmentOverlap.init()
-        self.ip_checks = [IpSpoofing, Destination, IcmpFlood, FragmentOverlap]
+        self.ip_checks=[IpSpoofing, Destination, IcmpFlood, FragmentOverlap]
         self.tcp_checks = [Handshake, Flag, NullPacket, PortCheck]
 
         self.arp_checks = [ArpSpoofing]
