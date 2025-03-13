@@ -76,10 +76,11 @@ def packet_handler(packet):
             if src == connection.finisher and packet[TCP].flags == 'A':
                 # connection was terminated correctly
                 duration = time() - connection.begin
-                print(f'Connection terminated for {src} <-> {dst}')
+                print(f'Connection terminated for {src} <-> {dst}, duration {duration}, src_bytes {connection.src_bytes}, dst_bytes {connection.dst_bytes}, flag SF')
                 del tcp_connections[key]
-        if packet[TCP].flags == 'R':
-            print(f'Connection reset for {src} <-> {dst}')
+        if 'R' in packet[TCP].flags:
+            duration = time() - connection.begin
+            print(f'Connection reset for {src} <-> {dst}, duration {duration}, src_bytes {connection.src_bytes}, dst_bytes {connection.dst_bytes}, flag REJ')
             del tcp_connections[key]
         # print(packet[TCP])
     checker.check(packet)
