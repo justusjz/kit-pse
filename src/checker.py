@@ -5,7 +5,7 @@ from src.check.ip.ip_spoofing import IpSpoofing
 from src.check.ip.destination import Destination
 from src.check.ip.icmp_flood import IcmpFlood
 from src.check.ip.fragment_overlap import FragmentOverlap
-from src.check.tcp.handshake import Handshake
+from src.check.tcp.connection import Connection
 from src.check.tcp.flag import Flag
 from src.check.tcp.null_packet import NullPacket
 from src.check.tcp.port_check import PortCheck
@@ -21,7 +21,7 @@ class Checker:
         DnsSpoofing.update_malicious_ips()
         FragmentOverlap.init()
         self.ip_checks = [IpSpoofing, Destination, IcmpFlood, FragmentOverlap]
-        self.tcp_checks = [Handshake, Flag, NullPacket, PortCheck]
+        self.tcp_checks = [Connection, Flag, NullPacket, PortCheck]
 
         self.arp_checks = [ArpSpoofing]
 
