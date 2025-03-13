@@ -1,7 +1,7 @@
 from scapy.layers.inet import UDP, IP, ICMP, fragment
 from scapy.packet import Packet
 import unittest
-import src.main as main
+import main as main
 from src.test.test_utils import send_test_packet
 
 
