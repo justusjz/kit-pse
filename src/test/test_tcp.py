@@ -4,7 +4,7 @@ import time
 from scapy.layers.inet import ICMP, IP, TCP
 from src.test.test_utils import send_test_tcp_packet
 
-from src.test.tcp import tcp_handshake_ignore
+from src.check.tcp import tcp_handshake_ignore
 
 
 class TestTCP(unittest.TestCase):
