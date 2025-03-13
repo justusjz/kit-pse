@@ -10,7 +10,6 @@ class SlackClient:
     def send_message(
         self, message: str, channel: str = os.getenv("SLACK_CHANNEL_NAME")
     ):
-        return
         message_blocks = self.format_malicious_packet_message(message)
         try:
             self.client.chat_postMessage(
