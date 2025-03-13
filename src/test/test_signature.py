@@ -1,5 +1,5 @@
 import unittest
-import src.main as main
+import main as main
 from scapy.layers.inet import IP, TCP
 
 

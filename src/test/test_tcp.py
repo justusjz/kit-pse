@@ -1,5 +1,5 @@
 import unittest
-import src.main as main
+import main as main
 import time
 from scapy.layers.inet import ICMP, IP, TCP
 from src.test.test_utils import send_test_tcp_packet

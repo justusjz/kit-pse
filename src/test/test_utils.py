@@ -1,6 +1,6 @@
 from scapy.layers.inet import IP, TCP
 from scapy.packet import Packet
-import src.main as main
+import main as main
 
 
 def send_test_tcp_packet(packet: Packet):
