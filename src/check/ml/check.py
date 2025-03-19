@@ -1,5 +1,6 @@
 from joblib import load
 from src.check.ml.training import train_model
+from src.logging.logger import Logger
 import os
 import pandas as pd
 
@@ -54,6 +55,11 @@ def ml_check_connection(
     print(
         f"Prediction for connection (protocol_type: {protocol_type}, flag: {flag}, service: {service}, duration: {duration}, src_bytes: {src_bytes}, dst_bytes: {dst_bytes}) => {prediction[0]}"
     )
+    if prediction[0] != "normal":
+        Logger.log_prediction(
+            protocol_type, flag, service, duration, src_bytes, dst_bytes, prediction[0]
+        )
+
     return prediction[0]
 
 
