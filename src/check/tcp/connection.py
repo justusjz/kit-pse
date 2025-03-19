@@ -1,5 +1,5 @@
 from src.check.check import Check
-from src.check.ml.check import ml_check_packet
+from src.check.ml.check import ml_check_connection
 from src.logging.logger import Logger
 from scapy.layers.inet import IP, TCP
 from scapy.layers.inet6 import IPv6
@@ -117,7 +117,7 @@ class Connection(Check):
                 service = service_map[connection.port]
             else:
                 service = "private"
-            ml_check_packet(
+            ml_check_connection(
                 "tcp",
                 flag,
                 service,
