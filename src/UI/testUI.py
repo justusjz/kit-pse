@@ -16,8 +16,15 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
+# Globale Variablen für das Modell und die Daten
+predictions: dict = {}
+Y_test = None
+data = None
+
 # NSL-KDD Dataset laden
 def load_nsl_kdd():
+    global data
+
     column_names = ["duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes", "land", "wrong_fragment", "urgent", "hot", "num_failed_logins", "logged_in", "num_compromised", "root_shell", "su_attempted", "num_root", "num_file_creations", "num_shells", "num_access_files", "num_outbound_cmds", "is_host_login", "is_guest_login", "count", "srv_count", "serror_rate", "srv_serror_rate", "rerror_rate", "srv_rerror_rate", "same_srv_rate", "diff_srv_rate", "srv_diff_host_rate", "dst_host_count", "dst_host_srv_count", "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate", "dst_host_srv_diff_host_rate", "dst_host_serror_rate", "dst_host_srv_serror_rate", "dst_host_rerror_rate", "dst_host_srv_rerror_rate", "class", "level"]
 
     data = pd.read_csv("nsl-kdd/KDDTrain+.txt", names=column_names, index_col=False)
@@ -40,10 +47,6 @@ def load_nsl_kdd():
     Y_test = data_test["class"]
 
     return X_train, Y_train, X_test, Y_test
-
-# Globale Variablen für das Modell und die Daten
-predictions: dict = {}
-Y_test = None
 
 # Modell Training
 def train_model():
@@ -133,20 +136,52 @@ def save_heatmap(fig):
 
 
 
-def generate_histogram():
-    global canvas
+def generate_data_analysis():
+    global data
+    analysis_window = tk.Toplevel(root)
+    analysis_window.title("Data Analysis")
+    analysis_window.geometry("900x700")
 
-    # Beispiel-Histogrammdaten
-    data = np.random.exponential(scale=2.0, size=1000)
+    ddata = np.array(data["src_bytes"])  # Sicherstellen, dass es ein NumPy-Array ist
+    min_val = np.min(ddata[ddata > 0])  # Kleinster Wert > 0
+    max_val = np.max(ddata)  # Größter Wert
+    bins = np.geomspace(min_val, max_val, 10)
+    bins = np.insert(bins, 0, 0)
 
     fig, ax = plt.subplots(figsize=(6, 5))
-    ax.hist(data, bins=20, edgecolor="black")
+    ax.hist(data["src_bytes"], bins=bins, edgecolor="black")
     ax.set_xscale("log")
-    ax.set_title("Logarithmic Histogram")
+    ax.set_title("Histogram of src_bytes")
 
-    canvas = FigureCanvasTkAgg(fig, master=frame_chart)
+    canvas = FigureCanvasTkAgg(fig, master=analysis_window)
     canvas.draw()
     canvas.get_tk_widget().pack()
+
+    data_cleaned = data.dropna(axis="columns")
+    ndf = data_cleaned[[col for col in data_cleaned.columns if data_cleaned[col].nunique() > 1 and pd.api.types.is_numeric_dtype(data_cleaned[col])]]
+    corr = ndf.corr()
+
+    fig2, ax2 = plt.subplots(figsize=(6, 5))
+    sns.heatmap(corr, ax=ax2)
+    ax2.set_title("Correlation Matrix")
+
+    canvas2 = FigureCanvasTkAgg(fig2, master=analysis_window)
+    canvas2.draw()
+    canvas2.get_tk_widget().pack()
+
+    categorical_features = ["protocol_type", "service", "flag"]
+    category_counts = {feature: data_cleaned[feature].value_counts() for feature in categorical_features}
+
+    fig3, axs = plt.subplots(1, 3, figsize=(15, 5), dpi=100)
+    for i, feature in enumerate(categorical_features):
+        axs[i].bar(category_counts[feature].index, category_counts[feature].values)
+        axs[i].set_title(feature)
+        axs[i].tick_params(axis='x', rotation=90)
+    fig3.suptitle('Categorical Data from KDD Cup Dataset')
+
+    canvas3 = FigureCanvasTkAgg(fig3, master=analysis_window)
+    canvas3.draw()
+    canvas3.get_tk_widget().pack()
 
 # Funktion zur Aktualisierung des Labels
 def update_label_selected_model_accuracy(*args):
@@ -207,8 +242,8 @@ frame_buttons.pack(pady=10)
 btn_heatmap = tk.Button(frame_buttons, text="Generate Heatmap", command=generate_heatmap)
 btn_heatmap.grid(row=0, column=0, padx=5)
 
-# btn_histogram = tk.Button(frame_buttons, text="Generate Histogram", command=generate_histogram)
-# btn_histogram.grid(row=0, column=1, padx=5)
+btn_histogram = tk.Button(frame_buttons, text="Generate Dataset analysis diagramms", command=generate_data_analysis)
+btn_histogram.grid(row=0, column=1, padx=5)
 
 # Frame für die Diagramme
 frame_chart = tk.Frame(root)
