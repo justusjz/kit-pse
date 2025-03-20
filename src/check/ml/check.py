@@ -1,11 +1,9 @@
 from joblib import load
 from src.check.ml.training import train_model
 from src.logging.logger import Logger
+from src.conf import MODEL_PATH
 import os
 import pandas as pd
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "nsl_model_pipeline.joblib")
 
 
 def load_model():
@@ -51,7 +49,6 @@ def ml_check_connection(
 
     # prediction with the loaded model
     prediction = model.predict(connection)
-
     print(
         f"Prediction for connection (protocol_type: {protocol_type}, flag: {flag}, service: {service}, duration: {duration}, src_bytes: {src_bytes}, dst_bytes: {dst_bytes}) => {prediction[0]}"
     )

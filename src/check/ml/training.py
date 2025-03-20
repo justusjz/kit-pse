@@ -6,24 +6,20 @@ from sklearn.pipeline import Pipeline
 from sklearn.neural_network import MLPClassifier
 from joblib import dump
 from src.utils.download import download_file
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-train_url = "https://raw.githubusercontent.com/jmnwong/NSL-KDD-Dataset/master/KDDTrain+.txt"  # url for the training set
-test_url = "https://raw.githubusercontent.com/jmnwong/NSL-KDD-Dataset/master/KDDTest+.txt"  # url for the test set
-
-# local storage location
-TRAIN_FILE = os.path.join(BASE_DIR, "KDDTrain+.txt")
-TEST_FILE = os.path.join(BASE_DIR, "KDDTest+.txt")
+from src.conf import (
+    TEST_URL,
+    TRAIN_URL,
+    TRAIN_FILE,
+    TEST_FILE,
+    MAX_ITER,
+    HIDDEN_LAYER_SIZES,
+    MODEL_PATH,
+    RANDOM_STATE,
+)
 
 # download nsl training data
-download_file(train_url, TRAIN_FILE)
-download_file(test_url, TEST_FILE)
-
-hidden_layer_size = (500, 50)
-max_iter = 500
+download_file(TRAIN_URL, TRAIN_FILE)
+download_file(TEST_URL, TEST_FILE)
 
 
 def train_model(path: str):
@@ -126,9 +122,9 @@ def train_model(path: str):
             (
                 "classifier",
                 MLPClassifier(
-                    hidden_layer_sizes=hidden_layer_size,
-                    max_iter=max_iter,
-                    random_state=42,
+                    hidden_layer_sizes=HIDDEN_LAYER_SIZES,
+                    max_iter=MAX_ITER,
+                    random_state=RANDOM_STATE,
                 ),
             ),
         ]
@@ -144,5 +140,4 @@ def train_model(path: str):
 
 
 if __name__ == "__main__":
-    MODEL_SAVE_PATH = os.path.join(BASE_DIR, "nsl_model_pipeline.joblib")
-    train_model(MODEL_SAVE_PATH)
+    train_model(MODEL_PATH)
