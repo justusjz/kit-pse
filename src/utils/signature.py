@@ -1,5 +1,6 @@
 import json
 import re
+from src.logging.logger import Logger
 from dataclasses import dataclass
 
 
@@ -12,9 +13,9 @@ class SignatureDb:
         try:
             with open(path, "r") as f:
                 self.known = json.load(f)
-                print(f"Loaded signature database from `{path}`")
+                Logger.info(f"Loaded signature database from `{path}`")
         except:
-            print(f"Signature database `{path}` not found")
+            Logger.error(f"Signature database `{path}` not found")
             self.known = []
 
     def add_signature(self, pattern: str, description: str):
@@ -25,7 +26,7 @@ class SignatureDb:
             path = self.path
         with open(path, "w") as f:
             json.dump(self.known, f)
-        print(f"Saved signature database to `{path}`")
+        Logger.info(f"Saved signature database to `{path}`")
 
     def detect(self, content: bytes) -> str | None:
         for signature in self.known:
