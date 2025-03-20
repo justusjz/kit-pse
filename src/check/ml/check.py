@@ -58,24 +58,3 @@ def ml_check_connection(
         )
 
     return prediction[0]
-
-
-# debug
-sample_normal = {
-    "protocol_type": "tcp",
-    "flag": "SF",
-    "service": "http",
-    "duration": 0,
-    "src_bytes": 181,
-    "dst_bytes": 5450,
-}
-
-result = ml_check_connection(
-    protocol_type=sample_normal["protocol_type"],
-    flag=sample_normal["flag"],
-    service=sample_normal["service"],
-    duration=sample_normal["duration"],
-    src_bytes=sample_normal["src_bytes"],
-    dst_bytes=sample_normal["dst_bytes"],
-)
-print("Result sample_normal connection:", result)
