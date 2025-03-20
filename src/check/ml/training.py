@@ -6,6 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.neural_network import MLPClassifier
 from joblib import dump
 from src.utils.download import download_file
+from src.logging.logger import Logger
 from src.conf import (
     TEST_URL,
     TRAIN_URL,
@@ -132,11 +133,11 @@ def train_model(path: str):
 
     # train model
     pipeline.fit(X_train, y_train)
-    print("Finished model training.")
+    Logger.info("Finished model training.")
 
     # save model (Joblib-File)
     dump(pipeline, path)
-    print(f"Saved model under {path}.")
+    Logger.info(f"Saved model under {path}.")
 
 
 if __name__ == "__main__":

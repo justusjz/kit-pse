@@ -8,10 +8,10 @@ import pandas as pd
 
 def load_model():
     if os.path.exists(MODEL_PATH):
-        print("load model from: ", MODEL_PATH)
+        Logger.info(f"load model from: {MODEL_PATH}")
         return load(MODEL_PATH)
     else:
-        print("Model not found, start new training...")
+        Logger.info("Model not found, start new training...")
         # train automatically a new model (Warning: this can take some time)
         train_model(MODEL_PATH)
         # load the model again after the training
@@ -49,7 +49,7 @@ def ml_check_connection(
 
     # prediction with the loaded model
     prediction = model.predict(connection)
-    print(
+    Logger.debug(
         f"Prediction for connection (protocol_type: {protocol_type}, flag: {flag}, service: {service}, duration: {duration}, src_bytes: {src_bytes}, dst_bytes: {dst_bytes}) => {prediction[0]}"
     )
     if prediction[0] != "normal":
