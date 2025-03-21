@@ -1,10 +1,11 @@
 from src.check.check import Check
 from src.logging.logger import Logger
 from scapy.layers.inet import IP
+from src.conf import CHECK_IP_SPOOFING, RESERVED_IPS
 
 
 class IpSpoofing(Check):
-    __reserved_ips = ["192.168.1.4", "192.168.1.1", "192.168.1.7", "172.16.0.3"]
+    __reserved_ips = RESERVED_IPS
 
     def __init__(self):
         super().__init__()
@@ -12,7 +13,7 @@ class IpSpoofing(Check):
     @classmethod
     def check(cls, packet):
         src_ip = packet[IP].src
-        if src_ip not in IpSpoofing.__reserved_ips:
+        if src_ip not in IpSpoofing.__reserved_ips and CHECK_IP_SPOOFING:
             if (
                 src_ip.startswith("10.")
                 or src_ip.startswith("192.168.")
