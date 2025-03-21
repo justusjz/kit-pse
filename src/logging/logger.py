@@ -44,5 +44,29 @@ class Logger:
         cls.__slack_logger.send_message(log_message)
 
     @classmethod
+    def log_prediction(
+        cls,
+        protocol_type: str,
+        flag: str,
+        service: str,
+        duration: int,
+        src_bytes: int,
+        dst_bytes: int,
+        prediction: str,
+    ):
+        message = (
+            f"Prediction: {prediction}\n"
+            f"Details of connection:\n"
+            f"  Protocol: {protocol_type}\n"
+            f"  Flag: {flag}\n"
+            f"  Service: {service}\n"
+            f"  Duration: {duration} sec\n"
+            f"  Src Bytes: {src_bytes}\n"
+            f"  Dst Bytes: {dst_bytes}"
+        )
+        logging.warning(message)
+        cls.__slack_logger.send_message(message)
+
+    @classmethod
     def get_log_file_name(cls) -> str:
         return cls.__log_file
