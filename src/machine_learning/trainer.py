@@ -1,10 +1,9 @@
 import os
 
 from pandas.core.groupby import DataFrameGroupBy
+from joblib import load, dump
 
 from src.logging.logger import Logger
-import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
 from scipy.io import arff
@@ -14,9 +13,15 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-
-SOURCE_PATH = os.getenv("SOURCE_PATH")
-FEATURES_NUMBER = int(os.getenv("FEATURES_NUMBER"))
+from src.conf import (
+    ML_DATASET_PATH,
+    FEATURES_NUMBER,
+    MODEL_FILE_EXTENSION,
+    INTEGRATION_MODEL_PATH,
+    TEST_SIZE,
+    RANDOM_STATE,
+    TRAINED_MODELS_DIR,
+)
 
 """
 Main entry in Anomaly Detection. 
@@ -27,7 +32,7 @@ Train the models with specified data source and algorithm.
 class MLTrainer:
     def train(
         self,
-        data_source_path: str = SOURCE_PATH,
+        data_source_path: str = ML_DATASET_PATH,
         features_number: int = FEATURES_NUMBER,
     ):
         # Set display options to show all columns and rows
@@ -58,8 +63,9 @@ class MLTrainer:
         x, y = self.select_features(data, df, features_number)
         x_train, x_test, y_train, y_test = self.split_data(x, y)
 
-        self.train_model(x_train, x_test, y_train, y_test, LogisticRegression())
-        self.train_model(x_train, x_test, y_train, y_test, SGDClassifier())
+        model = self.train_model(x_train, x_test, y_train, y_test, LogisticRegression())
+        # self.train_model(x_train, x_test, y_train, y_test, SGDClassifier())
+        self.save_model(model)
 
     @staticmethod
     def normalize_data(df: DataFrame) -> DataFrame:
@@ -68,6 +74,7 @@ class MLTrainer:
         :param pd.DataFrame df: dataset data
         :return pd.DataFrame scaled dataset data
         """
+
         # Separate categorical and numerical columns
         numerical_cols = df.select_dtypes(include=["int64", "float64"]).columns
         categorical_cols = df.select_dtypes(include=["object"]).columns
@@ -90,11 +97,7 @@ class MLTrainer:
 
         scaled_data = preprocessor.fit_transform(df)
         df_scaled = pd.DataFrame(
-            scaled_data,
-            columns=numerical_cols.tolist()
-            + preprocessor.named_transformers_["cat"]
-            .get_feature_names_out(categorical_cols)
-            .tolist(),
+            scaled_data, columns=preprocessor.get_feature_names_out()
         )
 
         Logger.debug(
@@ -116,8 +119,8 @@ class MLTrainer:
         :param DataFrame df: dataset data
         :return DataFrameGroupBy grouped data with the highest difference mean value
         """
-        del df["class_b'anomaly'"]
-        data = df.groupby("class_b'normal'").mean().T
+        del df["cat__class_b'anomaly'"]
+        data = df.groupby("cat__class_b'normal'").mean().T
         data["diff"] = abs(data.iloc[:, 0] - data.iloc[:, 1])
         data = data.sort_values(by=["diff"], ascending=False)
         return data
@@ -136,7 +139,7 @@ class MLTrainer:
         Logger.debug("\n".join(["Best features:", str(data.head(feat_number))]))
         X = df[features]
         # TODO: Change this hardcoded value
-        y = df["class_b'normal'"]
+        y = df["cat__class_b'normal'"]
         return X, y
 
     @staticmethod
@@ -150,7 +153,7 @@ class MLTrainer:
         :return tuple[DataFrame, DataFrame, DataFrame, DataFrame, DataFrame] trained and test Frames
         """
         x_train, x_test, y_train, y_test = train_test_split(
-            x, y, test_size=0.3, random_state=42
+            x, y, test_size=TEST_SIZE, random_state=RANDOM_STATE
         )
         return x_train, x_test, y_train, y_test
 
@@ -167,6 +170,8 @@ class MLTrainer:
         """
         model.fit(x_train, y_train)
 
+        return model
+
         y_pred = model.predict(x_test)
 
         """
@@ -178,6 +183,30 @@ class MLTrainer:
 
         model_accuracy = accuracy_score(y_test, y_pred)
         print(f"Accuracy: {model_accuracy}")
+
+    def save_model(self, model) -> None:
+        """
+        Saving trained model in directory with algorithm name.
+        :param model: trained model
+        """
+        model_path = self.create_model_path(model)
+        dump(model, model_path)
+        Logger.info(f"Saved model under {model_path}.")
+
+    @staticmethod
+    def create_model_path(model):
+        return os.path.join(
+            TRAINED_MODELS_DIR, str(model).replace("()", "") + MODEL_FILE_EXTENSION
+        )
+
+    @classmethod
+    def get_integration_model(cls):
+        """
+        Get trained model for integration purpose
+        :return: machine learning model
+        """
+        Logger.info(f"load model from: {INTEGRATION_MODEL_PATH}")
+        return load(INTEGRATION_MODEL_PATH)
 
 
 if __name__ == "__main__":

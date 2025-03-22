@@ -1,15 +1,13 @@
-import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from conf import SLACK_TOKEN, SLACK_CHANNEL_NAME
 
 
 class SlackClient:
     def __init__(self):
-        self.client = WebClient(token=os.getenv("SLACK_TOKEN"))
+        self.client = WebClient(token=SLACK_TOKEN)
 
-    def send_message(
-        self, message: str, channel: str = os.getenv("SLACK_CHANNEL_NAME")
-    ):
+    def send_message(self, message: str, channel: str = SLACK_CHANNEL_NAME):
         message_blocks = self.format_malicious_packet_message(message)
         try:
             self.client.chat_postMessage(

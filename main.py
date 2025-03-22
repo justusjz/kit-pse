@@ -1,9 +1,8 @@
-import os
-
-from src.checker import Checker
+from checker import Checker
 from scapy.all import sniff
 from src.logging.logger import Logger
-from src.conf import SNIFF_FILTER, SNIFF_INTERFACE
+from conf import SNIFF_FILTER, SNIFF_INTERFACE
+from src.conf import CLEAR_LOG
 
 checker = Checker()
 
@@ -14,7 +13,7 @@ def packet_handler(packet):
 
 
 def main():
-    if os.getenv("CLEAR_LOG") == "True":
+    if CLEAR_LOG:
         with open(Logger.get_log_file_name(), "w") as log_file:
             log_file.truncate(0)
     Logger.info(

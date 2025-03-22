@@ -1,20 +1,40 @@
 import logging
-import os
+import sys
 
 from scapy.layers.inet import IP, TCP, UDP, Ether
 from scapy.layers.inet6 import IPv6
 from src.logging.slack import SlackClient
+from conf import LOG_LEVEL
 
 
 class Logger:
     __log_file = "run.log"  # File where logs will be saved
-    __log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-    logging.basicConfig(
-        filename=__log_file,
-        level=__log_level,
-        format="%(asctime)s - %(levelname)s - %(message)s",
+    __log_level = LOG_LEVEL.upper()  # Convert log level to uppercase
+
+    # Create a logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(__log_level)
+
+    # Create a formatter
+    formatter = logging.Formatter(
+        fmt="%(asctime)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
+    # Create a file handler
+    file_handler = logging.FileHandler(__log_file)
+    file_handler.setLevel(__log_level)
+    file_handler.setFormatter(formatter)
+
+    # Create a console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(__log_level)
+    console_handler.setFormatter(formatter)
+
+    # Add handlers to the logger
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
     __slack_logger = SlackClient()
 
     @classmethod
@@ -43,26 +63,18 @@ class Logger:
         logging.warning(log_message)
         cls.__slack_logger.send_message(log_message)
 
+    # TODO: Method should be more flexible
     @classmethod
-    def log_prediction(
-        cls,
-        protocol_type: str,
-        flag: str,
-        service: str,
-        duration: int,
-        src_bytes: int,
-        dst_bytes: int,
-        prediction: str,
-    ):
+    def log_prediction(cls, packet_df, prediction: str):
         message = (
             f"Prediction: {prediction}\n"
             f"Details of connection:\n"
-            f"  Protocol: {protocol_type}\n"
-            f"  Flag: {flag}\n"
-            f"  Service: {service}\n"
-            f"  Duration: {duration} sec\n"
-            f"  Src Bytes: {src_bytes}\n"
-            f"  Dst Bytes: {dst_bytes}"
+            f"  Protocol: {packet_df['protocol_type'][0]}\n"
+            f"  Flag: {packet_df['flag'][0]}\n"
+            f"  Service: {packet_df['service'][0]}\n"
+            f"  Duration: {packet_df['duration'][0]} sec\n"
+            f"  Src Bytes: {packet_df['src_bytes'][0]}\n"
+            f"  Dst Bytes: {packet_df['dst_bytes'][0]}"
         )
         logging.warning(message)
         cls.__slack_logger.send_message(message)
