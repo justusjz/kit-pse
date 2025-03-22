@@ -1,5 +1,5 @@
 from src.check.check import Check
-from src.check.ml.check import ml_check_connection
+from src.check.ml.ml_check import MLCheck
 from src.logging.logger import Logger
 from scapy.layers.inet import IP, TCP
 from scapy.layers.inet6 import IPv6
@@ -105,24 +105,7 @@ class Connection(Check):
             and packet[TCP].flags == "A"
             or "R" in packet[TCP].flags
         ):
-            # connection was terminated correctly or reset
-            # TODO: duration in seconds?
-            duration = int(time() - connection.begin)
-            # TODO: figure out what the other flags mean
-            if "R" in packet[TCP].flags:
-                flag = "REJ"
-            else:
-                flag = "SF"
-            if connection.port in service_map:
-                service = service_map[connection.port]
-            else:
-                service = "private"
-            ml_check_connection(
-                "tcp",
-                flag,
-                service,
-                duration,
-                connection.src_bytes,
-                connection.dst_bytes,
-            )
+            # TODO: Is it really needed to do a ml check if before malicious was detected ?
+            # TODO: Call another check inside a check breaking a logic and must be avoided!!!
+            MLCheck.check(packet)
             del tcp_connections[key]

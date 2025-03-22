@@ -1,5 +1,4 @@
 import pandas as pd
-import os
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.pipeline import Pipeline
@@ -14,7 +13,7 @@ from src.conf import (
     TEST_FILE,
     MAX_ITER,
     HIDDEN_LAYER_SIZES,
-    MODEL_PATH,
+    INTEGRATION_MODEL_PATH,
     RANDOM_STATE,
 )
 
@@ -141,4 +140,4 @@ def train_model(path: str):
 
 
 if __name__ == "__main__":
-    train_model(MODEL_PATH)
+    train_model(INTEGRATION_MODEL_PATH)
