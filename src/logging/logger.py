@@ -4,7 +4,7 @@ import sys
 from scapy.layers.inet import IP, TCP, UDP, Ether
 from scapy.layers.inet6 import IPv6
 from src.logging.slack import SlackClient
-from conf import LOG_LEVEL
+from src.conf import LOG_LEVEL
 
 
 class Logger:
