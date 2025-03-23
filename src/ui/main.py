@@ -12,7 +12,7 @@ from sklearn import metrics
 from sklearn.decomposition import PCA
 from sklearn.metrics import confusion_matrix, roc_curve, auc, ConfusionMatrixDisplay
 
-from machine_learning.trainer import MLTrainer
+from src.machine_learning.trainer import MLTrainer
 
 ml_trainer = MLTrainer()
 root = tk.Tk()
@@ -65,18 +65,44 @@ def load_dataset():
         return
     update_features()
     select_features_screen.tkraise()
-    open_data_charts_window()
+    if print_data_graphs.get(): open_data_charts_window()
 
-
-tk.Button(select_dataset_screen, text="Load Dataset", command=load_dataset).pack()
+load_dataset_frame = tk.Frame(select_dataset_screen)
+load_dataset_frame.pack()
+tk.Button(load_dataset_frame, text="Load Dataset", command=load_dataset).grid(row=0, column=0)
+print_data_graphs = tk.BooleanVar(value=True)
+tk.Checkbutton(load_dataset_frame, variable=print_data_graphs, text="Print data graphs?").grid(row=0, column=1)
 
 
 def train_model():
     print("training")
-    ml_trainer.train("model_name", ["list_of_features"], "dataset_path or nothing")
-    # analysis_screen.tkraise()
+    print(model_name)
+    print(selected_features)
+    print(dataset_path.get())
+    ml_trainer.train(model_name.get(), selected_features, dataset_path.get())
     # call open_model_charts_window() with data from model after training
-    open_model_charts_window()
+    # TODO: replace this with actual model predictions and y_test data
+    predictions_mapped = [
+        "normal",
+        "normal",
+        "normal",
+        "attack",
+        "attack",
+        "attack",
+        "attack",
+        "attack",
+    ]
+    Y_test_mapped = [
+        "attack",
+        "normal",
+        "normal",
+        "normal",
+        "attack",
+        "normal",
+        "normal",
+        "attack",
+    ]
+    open_model_charts_window(predictions_mapped, Y_test_mapped)
 
 
 model_name = tk.StringVar(value="gnb")
@@ -95,14 +121,20 @@ features_frame.pack()
 tk.OptionMenu(select_features_screen, model_name, "random_forest", "gnb", "cnb").pack()
 tk.Button(select_features_screen, text="Train Model", command=train_model).pack()
 
-
+selected_features = []
 def update_features():
     # update the list of features
     features_frame.children.clear()
     grid_columns = 4
     for index, field in enumerate(dataset_metadata.names()):
-        checkbutton = tk.Checkbutton(features_frame, text=field)
-        checkbutton.select()
+        var = tk.BooleanVar(value=True)
+        def on_check(f=field, v=var):
+            if v.get() and f not in selected_features:
+                selected_features.append(f)
+            elif not v.get() and f in selected_features:
+                selected_features.remove(f)
+        checkbutton = tk.Checkbutton(features_frame, text=field, variable=var, command=on_check)
+        selected_features.append(field)
         checkbutton.grid(row=index // grid_columns, column=index % grid_columns)
 
 
@@ -131,33 +163,11 @@ def create_scrolled_tab(tab):
     return plot_frame
 
 
-def open_model_charts_window():
+def open_model_charts_window(predictions_mapped, Y_test_mapped):
     new_window = tk.Toplevel(root)
     new_window.title("Model Charts")
     notebook = ttk.Notebook(new_window)
     notebook.pack(fill="both", expand=True)
-
-    # TODO: replace this with actual model predictions and y_test data
-    predictions_mapped = [
-        "normal",
-        "normal",
-        "normal",
-        "attack",
-        "attack",
-        "attack",
-        "attack",
-        "attack",
-    ]
-    Y_test_mapped = [
-        "attack",
-        "normal",
-        "normal",
-        "normal",
-        "attack",
-        "normal",
-        "normal",
-        "attack",
-    ]
 
     # scores
     Accuracy = metrics.accuracy_score(Y_test_mapped, predictions_mapped)
