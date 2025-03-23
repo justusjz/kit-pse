@@ -79,7 +79,7 @@ def train_model():
     open_model_charts_window()
 
 
-model_name = tk.StringVar(value="gnb")
+model_name = tk.StringVar(value="Model Algorithm")
 
 select_features_screen = make_screen()
 tk.Button(
@@ -92,7 +92,7 @@ tk.Label(
 ).pack()
 features_frame = tk.Frame(select_features_screen)
 features_frame.pack()
-tk.OptionMenu(select_features_screen, model_name, "random_forest", "gnb", "cnb").pack()
+tk.OptionMenu(select_features_screen, model_name, *ml_trainer.get_supported_model()).pack()
 tk.Button(select_features_screen, text="Train Model", command=train_model).pack()
 
 

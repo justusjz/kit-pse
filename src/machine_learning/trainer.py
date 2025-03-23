@@ -2,14 +2,13 @@ import os
 
 from pandas.core.groupby import DataFrameGroupBy
 from joblib import load, dump
-
+from src.machine_learning.model_enum import ModelEnum
 from src.logging.logger import Logger
 import pandas as pd
 from pandas import DataFrame
 from scipy.io import arff
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -33,16 +32,25 @@ class MLTrainer:
     def train(
         self,
         ml_model_name: str,
-        features: list[str],
+        features: list[str] = None,
         dataset_path: str = ML_DATASET_PATH,
     ):
         """
         Train the model with specified data source and algorithm.
+        :param ml_model_name: name of the ML model to be trained.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
         :return:
         """
-        features_number = len(features)
+        try:
+            model = ModelEnum.get(ml_model_name)
+        except ValueError:
+            raise Exception("Invalid model name")
+
+        if features is None:
+            features_number = FEATURES_NUMBER
+        else:
+            features_number = len(features)
         # Set display options to show all columns and rows
         pd.set_option("display.max_columns", None)  # Show all columns
 
@@ -71,7 +79,7 @@ class MLTrainer:
         x, y = self.select_features(data, df, features_number)
         x_train, x_test, y_train, y_test = self.split_data(x, y)
 
-        model = self.train_model(x_train, x_test, y_train, y_test, LogisticRegression())
+        model = self.train_model(x_train, x_test, y_train, y_test, model.model_class())
         # self.train_model(x_train, x_test, y_train, y_test, SGDClassifier())
         self.save_model(model)
 
@@ -215,6 +223,14 @@ class MLTrainer:
         """
         Logger.info(f"load model from: {INTEGRATION_MODEL_PATH}")
         return load(INTEGRATION_MODEL_PATH)
+
+    @staticmethod
+    def get_supported_model() -> list[str]:
+        """
+        Getting list with names of supported ml models
+        :return: list with names
+        """
+        return [model.name for model in ModelEnum]
 
 
 if __name__ == "__main__":
