@@ -32,18 +32,13 @@ class MLTrainer:
     def train(
         self,
         ml_model_name: str,
+        auto_features: bool = False,
         features: list[str] = None,
         dataset_path: str = ML_DATASET_PATH,
     ):
         """
         Train the model with specified data source and algorithm.
-        :param features: list of feature names from the datasource
-        :param dataset_path: path to dataset
-        :return:
-        """
-        features_number = len(features)
-        """
-        Train the model with specified data source and algorithm.
+        :param auto_features: take best features automatically in script
         :param ml_model_name: name of the ML model to be trained.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
@@ -54,7 +49,7 @@ class MLTrainer:
         except ValueError:
             raise Exception("Invalid model name")
 
-        if features is None:
+        if features is None or auto_features:
             features_number = FEATURES_NUMBER
         else:
             features_number = len(features)
@@ -82,8 +77,14 @@ class MLTrainer:
         Logger.debug("\n".join(["Is null stats:", str(df.isnull().sum())]))
 
         df = self.normalize_data(df)
-        data = self.analyze_data(df)
-        x, y = self.select_features(data, df, features_number)
+        if auto_features:
+            data = self.analyze_data(df)
+            x, y = self.select_features(data, df, features_number)
+        else:
+            # TODO: Change this hardcoded value
+            features = self.convert_features_names(df, features)
+            x, y = df[features], df["cat__class_b'normal'"]
+
         x_train, x_test, y_train, y_test = self.split_data(x, y)
 
         model = self.train_model(x_train, x_test, y_train, y_test, model.model_class())
@@ -164,6 +165,16 @@ class MLTrainer:
         # TODO: Change this hardcoded value
         y = df["cat__class_b'normal'"]
         return X, y
+
+    @staticmethod
+    def convert_features_names(df: DataFrame, orig_ft: list[str]) -> list[str]:
+        converted_features = []
+        for col in df.columns:
+            for ft in orig_ft:
+                if ft in col:
+                    converted_features.append(col)
+
+        return converted_features
 
     @staticmethod
     def split_data(

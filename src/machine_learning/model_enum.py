@@ -19,7 +19,7 @@ class ModelEnum(Enum):
 
     def __init__(self, name: str, model_class):
         self._name = name
-        self._model_class = model_class
+        self.model_class = model_class
 
     @classmethod
     def get(cls, name):
