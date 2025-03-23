@@ -82,33 +82,9 @@ tk.Checkbutton(
 
 def train_model():
     print("training")
-    print(model_name)
-    print(selected_features)
-    print(dataset_path.get())
-    ml_trainer.train(model_name.get(), selected_features, dataset_path.get())
+    predictions_mapped, Y_test_mapped, train_time = ml_trainer.train(model_name.get(), selected_features, dataset_path.get())
     # call open_model_charts_window() with data from model after training
-    # TODO: replace this with actual model predictions and y_test data
-    predictions_mapped = [
-        "normal",
-        "normal",
-        "normal",
-        "attack",
-        "attack",
-        "attack",
-        "attack",
-        "attack",
-    ]
-    Y_test_mapped = [
-        "attack",
-        "normal",
-        "normal",
-        "normal",
-        "attack",
-        "normal",
-        "normal",
-        "attack",
-    ]
-    open_model_charts_window(predictions_mapped, Y_test_mapped)
+    open_model_charts_window(predictions_mapped, Y_test_mapped, train_time)
 
 
 model_name = tk.StringVar(value="gnb")
@@ -175,11 +151,14 @@ def create_scrolled_tab(tab):
     return plot_frame
 
 
-def open_model_charts_window(predictions_mapped, Y_test_mapped):
+def open_model_charts_window(predictions_mapped, Y_test_mapped, train_time):
     new_window = tk.Toplevel(root)
     new_window.title("Model Charts")
     notebook = ttk.Notebook(new_window)
     notebook.pack(fill="both", expand=True)
+
+    Y_test_mapped = ["attack" if y == 1.0 else "normal" for y in Y_test_mapped]
+    predictions_mapped = ["attack" if pred == 1.0 else "normal" for pred in predictions_mapped]
 
     # scores
     Accuracy = metrics.accuracy_score(Y_test_mapped, predictions_mapped)
@@ -198,6 +177,7 @@ def open_model_charts_window(predictions_mapped, Y_test_mapped):
     tk.Label(tab, text=f"Precision: {Precision:.7f}").pack()
     tk.Label(tab, text=f"F1 Score: {F1_score:.7f}").pack()
     tk.Label(tab, text=f"Recall: {Recall:.7f}").pack()
+    tk.Label(tab, text=f"Training Time: {train_time:.7f}s").pack()
     notebook.add(tab, text=f"Confusion Matrix")
 
     # confusion matrix

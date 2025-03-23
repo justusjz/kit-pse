@@ -1,4 +1,5 @@
 import os
+import time
 
 from pandas.core.groupby import DataFrameGroupBy
 from joblib import load, dump
@@ -40,7 +41,7 @@ class MLTrainer:
         Train the model with specified data source and algorithm.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
-        :return:
+        :return: predicted and test values for the model and training time
         """
         features_number = len(features)
         # Set display options to show all columns and rows
@@ -71,9 +72,16 @@ class MLTrainer:
         x, y = self.select_features(data, df, features_number)
         x_train, x_test, y_train, y_test = self.split_data(x, y)
 
+        # start time tracing
+        start_time = time.time()
+
         model = self.train_model(x_train, x_test, y_train, y_test, LogisticRegression())
         # self.train_model(x_train, x_test, y_train, y_test, SGDClassifier())
+
+        # stop time tracing
+        training_time = time.time() - start_time
         self.save_model(model)
+        return model.predict(x_test), y_test, training_time
 
     @staticmethod
     def normalize_data(df: DataFrame) -> DataFrame:
