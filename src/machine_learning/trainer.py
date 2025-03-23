@@ -32,13 +32,21 @@ Train the models with specified data source and algorithm.
 class MLTrainer:
     def train(
         self,
-        data_source_path: str = ML_DATASET_PATH,
-        features_number: int = FEATURES_NUMBER,
+        ml_model_name: str,
+        features: list[str],
+        dataset_path: str = ML_DATASET_PATH,
     ):
+        """
+        Train the model with specified data source and algorithm.
+        :param features: list of feature names from the datasource
+        :param dataset_path: path to dataset
+        :return:
+        """
+        features_number = len(features)
         # Set display options to show all columns and rows
         pd.set_option("display.max_columns", None)  # Show all columns
 
-        data, meta = arff.loadarff(data_source_path)
+        data, meta = arff.loadarff(dataset_path)
 
         Logger.debug(str(meta))
 
