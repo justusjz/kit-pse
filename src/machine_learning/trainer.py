@@ -37,6 +37,13 @@ class MLTrainer:
     ):
         """
         Train the model with specified data source and algorithm.
+        :param features: list of feature names from the datasource
+        :param dataset_path: path to dataset
+        :return:
+        """
+        features_number = len(features)
+        """
+        Train the model with specified data source and algorithm.
         :param ml_model_name: name of the ML model to be trained.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
