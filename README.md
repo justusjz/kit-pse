@@ -9,7 +9,7 @@ installation and dependencies. This automatically installs everything that's
 required, to run the code you just have to do:
 
 ```bash
-sudo uv run src/main.py
+sudo uv run main.py
 ```
 
 Note that `sudo` (on Linux systems) is required because the packet inspection

@@ -3,9 +3,9 @@ from time import time
 from scapy.layers.inet import IP, TCP
 from scapy.layers.inet6 import IPv6
 
-from machine_learning.trainer import MLTrainer
+from src.machine_learning.trainer import MLTrainer
 from src.logging.logger import Logger
-from check.check import Check
+from src.check.check import Check
 
 
 class MLCheck(Check):
