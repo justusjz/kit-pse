@@ -65,13 +65,19 @@ def load_dataset():
         return
     update_features()
     select_features_screen.tkraise()
-    if print_data_graphs.get(): open_data_charts_window()
+    if print_data_graphs.get():
+        open_data_charts_window()
+
 
 load_dataset_frame = tk.Frame(select_dataset_screen)
 load_dataset_frame.pack()
-tk.Button(load_dataset_frame, text="Load Dataset", command=load_dataset).grid(row=0, column=0)
+tk.Button(load_dataset_frame, text="Load Dataset", command=load_dataset).grid(
+    row=0, column=0
+)
 print_data_graphs = tk.BooleanVar(value=True)
-tk.Checkbutton(load_dataset_frame, variable=print_data_graphs, text="Print data graphs?").grid(row=0, column=1)
+tk.Checkbutton(
+    load_dataset_frame, variable=print_data_graphs, text="Print data graphs?"
+).grid(row=0, column=1)
 
 
 def train_model():
@@ -122,18 +128,24 @@ tk.OptionMenu(select_features_screen, model_name, "random_forest", "gnb", "cnb")
 tk.Button(select_features_screen, text="Train Model", command=train_model).pack()
 
 selected_features = []
+
+
 def update_features():
     # update the list of features
     features_frame.children.clear()
     grid_columns = 4
     for index, field in enumerate(dataset_metadata.names()):
         var = tk.BooleanVar(value=True)
+
         def on_check(f=field, v=var):
             if v.get() and f not in selected_features:
                 selected_features.append(f)
             elif not v.get() and f in selected_features:
                 selected_features.remove(f)
-        checkbutton = tk.Checkbutton(features_frame, text=field, variable=var, command=on_check)
+
+        checkbutton = tk.Checkbutton(
+            features_frame, text=field, variable=var, command=on_check
+        )
         selected_features.append(field)
         checkbutton.grid(row=index // grid_columns, column=index % grid_columns)
 

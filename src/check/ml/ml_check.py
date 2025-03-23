@@ -14,15 +14,15 @@ class MLCheck(Check):
 
     @classmethod
     def check(cls, packet):
-        packet_df = MLCheck.__create_df(packet)
+        connection_df = MLCheck.__create_df(packet)
 
         # prediction with the loaded model
-        prediction = MLTrainer.get_integration_model().predict(packet_df)
+        prediction = MLTrainer.get_integration_model().predict(connection_df)
         Logger.debug(
-            f"Prediction for connection (protocol_type: {packet_df['protocol_type'][0]}, flag: {packet_df['flag'][0]}, service: {packet_df['service'][0]}, duration: {packet_df['duration'][0]}, src_bytes: {packet_df['src_bytes'][0]}, dst_bytes: {packet_df['dst_bytes'][0]}) => {prediction[0]}"
+            f"Prediction for connection (protocol_type: {connection_df['protocol_type'][0]}, flag: {connection_df['flag'][0]}, service: {connection_df['service'][0]}, duration: {connection_df['duration'][0]}, src_bytes: {connection_df['src_bytes'][0]}, dst_bytes: {connection_df['dst_bytes'][0]}) => {prediction[0]}"
         )
         if prediction[0] != "normal":
-            Logger.log_prediction(packet_df, prediction[0])
+            Logger.log_prediction(connection_df, prediction[0])
 
     @classmethod
     def __create_df(cls, packet) -> pd.DataFrame:
@@ -58,7 +58,7 @@ class MLCheck(Check):
         src_bytes = connection.src_bytes
         dst_bytes = connection.dst_bytes
 
-        packet_info = {
+        connection_info = {
             "protocol_type": [protocol_type],
             "flag": [flag],
             "service": [service if "https" != service else "http"],
@@ -67,4 +67,4 @@ class MLCheck(Check):
             "dst_bytes": [dst_bytes],
         }
 
-        return pd.DataFrame.from_dict(packet_info)
+        return pd.DataFrame.from_dict(connection_info)
