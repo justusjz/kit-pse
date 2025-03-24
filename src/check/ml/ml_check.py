@@ -10,15 +10,27 @@ from src.check.check import Check
 
 class MLCheck:
     @classmethod
-    def check(cls, proto: str, flag: str, service: str, duration: float, src_bytes: int, dst_bytes: int, land: int, urgent: int):
-        connection_df = pd.DataFrame({
-            "protocol_type": [proto],
-            "flag": [flag],
-            "service": [service],
-            "duration": [duration],
-            "src_bytes": [src_bytes],
-            "dst_bytes": [dst_bytes],
-        })
+    def check(
+        cls,
+        proto: str,
+        flag: str,
+        service: str,
+        duration: float,
+        src_bytes: int,
+        dst_bytes: int,
+        land: int,
+        urgent: int,
+    ):
+        connection_df = pd.DataFrame(
+            {
+                "protocol_type": [proto],
+                "flag": [flag],
+                "service": [service],
+                "duration": [duration],
+                "src_bytes": [src_bytes],
+                "dst_bytes": [dst_bytes],
+            }
+        )
         # prediction with the loaded model
         prediction = MLTrainer.get_integration_model().predict(connection_df)
         Logger.debug(
