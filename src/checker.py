@@ -1,5 +1,5 @@
 from scapy.layers.l2 import ARP
-from scapy.layers.inet import IP, TCP
+from scapy.layers.inet import IP, TCP, UDP
 
 from src.check.ip.ip_spoofing import IpSpoofing
 from src.check.ip.destination import Destination
@@ -14,6 +14,7 @@ from src.check.signature import Signature
 from src.check.checksum import Checksum
 from src.check.dns_spoofing import DnsSpoofing
 from src.check.malformed_packet import MalformedPacket
+from src.check.udp.anomaly import UdpAnomaly
 
 
 class Checker:
@@ -21,6 +22,7 @@ class Checker:
         DnsSpoofing.update_malicious_ips()
         FragmentOverlap.init()
         self.ip_checks = [IpSpoofing, Destination, IcmpFlood, FragmentOverlap]
+        self.udp_checks = [UdpAnomaly]
         self.tcp_checks = [Connection, Flag, NullPacket, PortCheck]
 
         self.arp_checks = [ArpSpoofing]
@@ -35,6 +37,10 @@ class Checker:
         if TCP in packet:
             for tcp_check in self.tcp_checks:
                 tcp_check.check(packet)
+
+        if UDP in packet:
+            for udp_check in self.udp_checks:
+                udp_check.check(packet)
 
         if ARP in packet:
             for arp_check in self.arp_checks:

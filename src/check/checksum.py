@@ -21,7 +21,9 @@ class Checksum(Check):
             if original_checksum != recalculated_checksum:
                 Logger.log_malicious_packet(packet, "Invalid IP checksum.")
 
-        if TCP in packet:
+        if IP in packet and TCP in packet:
+            # TODO: this does not work correctly for IPv6,
+            # so we restrict it to IP for now
             original_checksum = packet[
                 TCP
             ].chksum  # saves original checksum for comparison
