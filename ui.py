@@ -14,7 +14,7 @@ from sklearn import metrics
 from sklearn.decomposition import PCA
 from sklearn.metrics import confusion_matrix, roc_curve, auc, ConfusionMatrixDisplay
 
-from conf import BASE_DIR
+from src.conf import BASE_DIR
 from src.machine_learning.trainer import MLTrainer
 
 # Initialize MLTrainer and Tkinter with ttkbootstrap
@@ -134,7 +134,7 @@ ttk.Checkbutton(
     variable=print_data_graphs,
     text="Print data graphs?",
     bootstyle=INFO,
-)
+).pack()
 
 
 def train_model():
@@ -425,22 +425,7 @@ def open_data_charts_window():
     tab = ttk.Frame(notebook)
     create_tab_with_fig(tab, fig, ax, notebook, "Attack vs Normal Traffic")
 
-    # PCA graph
     num_features = data_cleaned.select_dtypes(include=["number"]).columns
-    X_pca = PCA(n_components=2).fit_transform(data_cleaned[num_features])
-
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.scatter(
-        X_pca[:, 0],
-        X_pca[:, 1],
-        alpha=0.5,
-        marker="o",
-        c=["red" if x == "attack" else "blue" for x in data_cleaned["class"]],
-    )
-    ax.set_title("PCA Projection of Features")
-
-    tab = ttk.Frame(notebook)
-    create_tab_with_fig(tab, fig, ax, notebook, "PCA graph")
 
     # histograms of numeric features
     tab = ttk.Frame(notebook)
