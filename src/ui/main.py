@@ -133,18 +133,19 @@ ttk.Checkbutton(
     variable=print_data_graphs,
     text="Print data graphs?",
     bootstyle=INFO,
+)
 
 def train_model():
     print("training")
     print(model_name)
     print(selected_features)
     print(dataset_path.get())
-    y_test, y_pred = ml_trainer.train(
+    y_test, y_pred, train_time = ml_trainer.train(
         model_name.get(), auto_feature.get(), selected_features, dataset_path.get()
     )
     # call open_model_charts_window() with data from model after training
 
-    open_model_charts_window(y_pred, y_test)
+    open_model_charts_window(y_pred, y_test, train_time)
 
 
 model_name = tk.StringVar(value="Model Algorithm")
@@ -262,16 +263,11 @@ def get_meter_style(value):
         return SUCCESS
 
 
-def open_model_charts_window(predictions_mapped, y_test_mapped):
+def open_model_charts_window(predictions_mapped, y_test_mapped, train_time):
     new_window = ttk.Toplevel(root)
     new_window.title("Model Charts")
     notebook = ttk.Notebook(new_window)
     notebook.pack(fill="both", expand=True)
-
-    Y_test_mapped = ["attack" if y == 1.0 else "normal" for y in Y_test_mapped]
-    predictions_mapped = [
-        "attack" if pred == 1.0 else "normal" for pred in predictions_mapped
-    ]
 
     # scores
     accuracy = metrics.accuracy_score(y_test_mapped, predictions_mapped)
@@ -287,7 +283,7 @@ def open_model_charts_window(predictions_mapped, y_test_mapped):
     # Create a top frame for the first row of meters
     top_frame = ttk.Frame(tab)
     top_frame.pack(fill="x", pady=10)
-
+    ttk.Label(top_frame, text=f"Training Time: {train_time:.7f}s").pack()
     # Add Accuracy and Sensitivity meters to the top frame
     ttk.Meter(
         top_frame,

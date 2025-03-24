@@ -162,7 +162,7 @@ def _terminate_connection(key: tuple[str, str, int, int], flag: str):
         service = "private"
     else:
         # unknown port
-        service = 'other'
+        service = "other"
     MLCheck.check(
         "tcp",
         flag,
@@ -170,6 +170,7 @@ def _terminate_connection(key: tuple[str, str, int, int], flag: str):
         duration,
         connection.src_bytes,
         connection.dst_bytes,
-        key[0] == key[1] or key[2] == key[3],  # land if the connection is from/to the same host/port
+        key[0] == key[1]
+        or key[2] == key[3],  # land if the connection is from/to the same host/port
         connection.urgent,
     )

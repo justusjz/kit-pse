@@ -7,8 +7,8 @@ from time import time
 
 service_map = {
     53: "domain_u",
-    69: 'tftp_u',
-    123: 'ntp_u',
+    69: "tftp_u",
+    123: "ntp_u",
 }
 
 
@@ -28,7 +28,7 @@ class UdpConnection:
             self.service = "private"
         else:
             # unknown port
-            self.service = 'other'
+            self.service = "other"
         self.src_bytes = src_bytes
 
 
@@ -79,6 +79,7 @@ def _terminate_connection(key: tuple[str, str, int, int], dst_bytes: int):
         duration,
         connection.src_bytes,
         dst_bytes,
-        key[0] == key[1] or key[2] == key[3], # land if connection is from/to the same host/port
+        key[0] == key[1]
+        or key[2] == key[3],  # land if connection is from/to the same host/port
         0,
     )

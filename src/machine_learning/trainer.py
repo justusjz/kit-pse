@@ -43,7 +43,7 @@ class MLTrainer:
         :param ml_model_name: name of the ML model to be trained.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
-        :return: test and prediction values for the model metrics observability
+        :return: test, prediction and training time values for the model metrics observability
 
         """
         try:
@@ -99,9 +99,7 @@ class MLTrainer:
         # stop time tracing
         training_time = time.time() - start_time
         self.save_model(model)
-        return model.predict(x_test), y_test, training_time
-
-        return y_test, y_pred
+        return y_test, y_pred, training_time
 
     @staticmethod
     def normalize_data(df: DataFrame) -> DataFrame:
