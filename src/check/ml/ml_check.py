@@ -8,14 +8,17 @@ from src.logging.logger import Logger
 from src.check.check import Check
 
 
-class MLCheck(Check):
-    def __init__(self):
-        super().__init__()
-
+class MLCheck:
     @classmethod
-    def check(cls, packet):
-        connection_df = MLCheck.__create_df(packet)
-
+    def check(cls, proto: str, flag: str, service: str, duration: float, src_bytes: int, dst_bytes: int, land: int, urgent: int):
+        connection_df = pd.DataFrame({
+            "protocol_type": [proto],
+            "flag": [flag],
+            "service": [service],
+            "duration": [duration],
+            "src_bytes": [src_bytes],
+            "dst_bytes": [dst_bytes],
+        })
         # prediction with the loaded model
         prediction = MLTrainer.get_integration_model().predict(connection_df)
         Logger.debug(
@@ -23,48 +26,3 @@ class MLCheck(Check):
         )
         if prediction[0] != "normal":
             Logger.log_prediction(connection_df, prediction[0])
-
-    @classmethod
-    def __create_df(cls, packet) -> pd.DataFrame:
-        from src.check.tcp.connection import tcp_connections, TcpConnection, service_map
-
-        if IP in packet:
-            src, dst = packet[IP].src, packet[IP].dst
-        else:
-            src, dst = packet[IPv6].src, packet[IPv6].dst
-        sport, dport = packet[TCP].sport, packet[TCP].dport
-        # unique key for this TCP connection
-        key = (min(src, dst), max(src, dst), min(sport, dport), max(sport, dport))
-        if key in tcp_connections:
-            connection = tcp_connections[key]
-        else:
-            connection = TcpConnection(src, dport)
-            tcp_connections[key] = connection
-        protocol_type = "tcp"
-        duration = int(time() - connection.begin)
-        # connection was terminated correctly or reset
-        # TODO: duration in seconds?
-        duration = int(time() - connection.begin)
-        # TODO: figure out what the other flags mean
-        if "R" in packet[TCP].flags:
-            flag = "REJ"
-        else:
-            flag = "SF"
-        if connection.port in service_map:
-            service = service_map[connection.port]
-        else:
-            service = "private"
-
-        src_bytes = connection.src_bytes
-        dst_bytes = connection.dst_bytes
-
-        connection_info = {
-            "protocol_type": [protocol_type],
-            "flag": [flag],
-            "service": [service if "https" != service else "http"],
-            "duration": [duration],
-            "src_bytes": [src_bytes],
-            "dst_bytes": [dst_bytes],
-        }
-
-        return pd.DataFrame.from_dict(connection_info)

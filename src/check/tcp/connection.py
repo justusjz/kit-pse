@@ -159,7 +159,7 @@ def _terminate_connection(key: tuple[str, str, int, int], flag: str):
         service = service_map[connection.port]
     else:
         service = "private"
-    ml_check_connection(
+    MLCheck.check(
         "tcp",
         flag,
         service,
