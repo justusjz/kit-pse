@@ -77,6 +77,11 @@ class Connection(Check):
         connection.last_packet = time()
         # check timed-out connections
         _process_timeouts()
+        if "R" in packet[TCP].flags:
+            # processing reset connections further causes way
+            # too many false positives
+            del tcp_connections[key]
+            return
         # count number of urgent packets
         if "U" in packet[TCP].flags:
             connection.urgent += 1
@@ -91,6 +96,9 @@ class Connection(Check):
             if src == connection.initiator and packet[TCP].flags == "S":
                 # typical connection start
                 connection.state = "syn"
+            elif src == connection.initiator and "A" in packet[TCP].flags:
+                # connection is already started
+                connection.state = "synack"
             else:
                 Logger.log_malicious_packet(
                     packet, "Invalid TCP handshake flags (expected S)"
@@ -98,14 +106,8 @@ class Connection(Check):
                 connection.state = "ack"
         elif connection.state == "syn":
             # we are now in state 0, initial SYN seen, but no reply
-            if dst == connection.initiator and packet[TCP].flags == "SA":
+            if dst == connection.initiator and "A" in packet[TCP].flags:
                 connection.state = "synack"
-            elif dst == connection.initiator and packet[TCP].flags == "R":
-                # connection was rejected, not necessarily suspicious
-                _terminate_connection(key, "REJ")
-            elif src == connection.initiator and packet[TCP].flags == "R":
-                # connection was rejected by initiator (originator) in state 0
-                _terminate_connection(key, "RSTOS0")
             else:
                 if "F" in packet[TCP].flags:
                     # connection was closed before being initiated
@@ -115,9 +117,9 @@ class Connection(Check):
                 )
                 connection.state = "ack"
         elif connection.state == "synack":
-            if src == connection.initiator and packet[TCP].flags == "A":
+            if src == connection.initiator and "A" in packet[TCP].flags:
                 connection.state = "ack"
-            else:
+            elif src == connection.initiator:
                 Logger.log_malicious_packet(
                     packet, "Invalid TCP handshake flags (expected A)"
                 )
@@ -128,9 +130,6 @@ class Connection(Check):
                 connection.state = "fin"
         elif connection.state == "fin":
             if dst == connection.finisher and packet[TCP].flags == "FA":
-                connection.state = "finack"
-        elif connection.state == "finack":
-            if dst == connection.initiator and packet[TCP].flags == "A":
                 _terminate_connection(key, "SF")
 
 
