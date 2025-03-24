@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 
+
 class ModelEnum(Enum):
     LOGISTIC_REGRESSION = ("LogisticRegression", LogisticRegression)
     DECISION_TREE = ("DecisionTree", DecisionTreeClassifier)

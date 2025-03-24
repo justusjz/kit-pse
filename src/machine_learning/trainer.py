@@ -42,7 +42,7 @@ class MLTrainer:
         :param ml_model_name: name of the ML model to be trained.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
-        :return:
+        :return: (test, prediction) values
         """
         try:
             model = ModelEnum.get(ml_model_name)
@@ -87,9 +87,13 @@ class MLTrainer:
 
         x_train, x_test, y_train, y_test = self.split_data(x, y)
 
-        model = self.train_model(x_train, x_test, y_train, y_test, model.model_class())
+        model, y_test, y_pred = self.train_model(
+            x_train, x_test, y_train, y_test, model.model_class()
+        )
         # self.train_model(x_train, x_test, y_train, y_test, SGDClassifier())
         self.save_model(model)
+
+        return y_test, y_pred
 
     @staticmethod
     def normalize_data(df: DataFrame) -> DataFrame:
@@ -204,9 +208,8 @@ class MLTrainer:
         """
         model.fit(x_train, y_train)
 
-        return model
-
         y_pred = model.predict(x_test)
+        return model, y_test, y_pred
 
         """
         Check results
