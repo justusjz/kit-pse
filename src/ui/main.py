@@ -82,7 +82,9 @@ tk.Checkbutton(
 
 def train_model():
     print("training")
-    predictions_mapped, Y_test_mapped, train_time = ml_trainer.train(model_name.get(), selected_features, dataset_path.get())
+    predictions_mapped, Y_test_mapped, train_time = ml_trainer.train(
+        model_name.get(), selected_features, dataset_path.get()
+    )
     # call open_model_charts_window() with data from model after training
     open_model_charts_window(predictions_mapped, Y_test_mapped, train_time)
 
@@ -158,7 +160,9 @@ def open_model_charts_window(predictions_mapped, Y_test_mapped, train_time):
     notebook.pack(fill="both", expand=True)
 
     Y_test_mapped = ["attack" if y == 1.0 else "normal" for y in Y_test_mapped]
-    predictions_mapped = ["attack" if pred == 1.0 else "normal" for pred in predictions_mapped]
+    predictions_mapped = [
+        "attack" if pred == 1.0 else "normal" for pred in predictions_mapped
+    ]
 
     # scores
     Accuracy = metrics.accuracy_score(Y_test_mapped, predictions_mapped)
