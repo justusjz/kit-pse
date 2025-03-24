@@ -135,7 +135,7 @@ class Connection(Check):
 
 
 def _process_timeouts():
-    for key, connection in tcp_connections.items():
+    for key, connection in list(tcp_connections.items()):
         if time() - connection.last_packet <= 30:
             continue
         # connections are timed out if there are no packets
@@ -152,13 +152,17 @@ def _process_timeouts():
 
 
 def _terminate_connection(key: tuple[str, str, int, int], flag: str):
-    connection = tcp_connections[key]
+    connection = tcp_connections.pop(key)
     # duration in seconds
     duration = time() - connection.begin
     if connection.port in service_map:
         service = service_map[connection.port]
-    else:
+    elif connection.port >= 49152:
+        # private/ephemeral port
         service = "private"
+    else:
+        # unknown port
+        service = 'other'
     MLCheck.check(
         "tcp",
         flag,
@@ -166,8 +170,6 @@ def _terminate_connection(key: tuple[str, str, int, int], flag: str):
         duration,
         connection.src_bytes,
         connection.dst_bytes,
-        key[0] == key[1]
-        or key[0] == key[1],  # land if the connection is from/to the same host/port
+        key[0] == key[1] or key[2] == key[3],  # land if the connection is from/to the same host/port
         connection.urgent,
     )
-    del tcp_connections[key]
