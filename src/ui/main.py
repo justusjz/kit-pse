@@ -82,6 +82,7 @@ def load_dataset():
     if print_data_graphs.get():
         open_data_charts_window()
 
+
 # Load Dataset Button
 load_dataset_button = ttk.Button(
     buttons_frame,
@@ -134,6 +135,7 @@ ttk.Checkbutton(
     text="Print data graphs?",
     bootstyle=INFO,
 )
+
 
 def train_model():
     print("training")
@@ -250,6 +252,7 @@ def create_scrolled_tab(tab):
     plot_frame.bind("<Configure>", on_frame_configure)
 
     return plot_frame
+
 
 def get_meter_style(value):
     """
