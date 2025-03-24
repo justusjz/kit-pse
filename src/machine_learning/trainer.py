@@ -248,7 +248,6 @@ class MLTrainer:
         Get trained model for integration purpose
         :return: machine learning model
         """
-        Logger.info(f"load model from: {INTEGRATION_MODEL_PATH}")
         return load(INTEGRATION_MODEL_PATH)
 
     @staticmethod
