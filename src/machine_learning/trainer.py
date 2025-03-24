@@ -1,4 +1,5 @@
 import os
+import time
 
 from pandas.core.groupby import DataFrameGroupBy
 from joblib import load, dump
@@ -42,7 +43,8 @@ class MLTrainer:
         :param ml_model_name: name of the ML model to be trained.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
-        :return: (test, prediction) values
+        :return: test and prediction values for the model metrics observability
+
         """
         try:
             model = ModelEnum.get(ml_model_name)
@@ -87,11 +89,17 @@ class MLTrainer:
 
         x_train, x_test, y_train, y_test = self.split_data(x, y)
 
+        # start time tracing
+        start_time = time.time()
         model, y_test, y_pred = self.train_model(
             x_train, x_test, y_train, y_test, model.model_class()
         )
         # self.train_model(x_train, x_test, y_train, y_test, SGDClassifier())
+
+        # stop time tracing
+        training_time = time.time() - start_time
         self.save_model(model)
+        return model.predict(x_test), y_test, training_time
 
         return y_test, y_pred
 

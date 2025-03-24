@@ -44,4 +44,4 @@ jobs:
           python-version-file: .python-version
 
       - name: Check Black Formatting
-        run: uv run black --check src
+        run: uv run black --check src/**/*.py

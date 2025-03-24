@@ -1,7 +1,7 @@
-from checker import Checker
+from src.checker import Checker
 from scapy.all import sniff
 from src.logging.logger import Logger
-from conf import SNIFF_FILTER, SNIFF_INTERFACE
+from src.conf import SNIFF_FILTER, SNIFF_INTERFACE
 from src.conf import CLEAR_LOG
 
 checker = Checker()

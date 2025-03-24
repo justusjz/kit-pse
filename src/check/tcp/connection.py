@@ -9,23 +9,28 @@ from time import time
 class TcpConnection:
     state: str
     begin: float
+    last_packet: float
     initiator: str
     port: int
     finisher: str | None
     src_bytes: int
     dst_bytes: int
+    # number of urgent packets
+    urgent: int
 
     def __init__(self, initiator: str, port: int):
         self.state = "initial"
         self.begin = time()
+        self.last_packet = time()
         self.initiator = initiator
         self.port = port
         self.finisher = None
         self.src_bytes = 0
         self.dst_bytes = 0
+        self.urgent = 0
 
 
-tcp_connections = dict[TcpConnection]()
+tcp_connections = dict[(str, str, int, int), TcpConnection]()
 
 
 # in some tests, we're not performing a TCP handshake, but that
@@ -45,6 +50,9 @@ service_map = {
     443: "https",
 }
 
+# fields are documented here: https://kdd.ics.uci.edu/databases/kddcup99/task.html
+# flags are documented here: https://www.cs.unc.edu/~jeffay/dirt/FAQ/comp290-042/tcp-reduce.html
+
 
 class Connection(Check):
     def __init__(self):
@@ -59,17 +67,29 @@ class Connection(Check):
         sport, dport = packet[TCP].sport, packet[TCP].dport
         # unique key for this TCP connection
         key = (min(src, dst), max(src, dst), min(sport, dport), max(sport, dport))
+        # find the connection, or create a new one
         if key in tcp_connections:
             connection = tcp_connections[key]
         else:
             connection = TcpConnection(src, dport)
             tcp_connections[key] = connection
+        # we got a new packet for this connection
+        connection.last_packet = time()
+        # check timed-out connections
+        _process_timeouts()
+        # count number of urgent packets
+        if "U" in packet[TCP].flags:
+            connection.urgent += 1
+        # update src and dst bytes
         if src == connection.initiator:
             connection.src_bytes += len(bytes(packet))
         else:
             connection.dst_bytes += len(bytes(packet))
+        # analyze the flags
         if connection.state == "initial":
+            # the connection hasn't started yet
             if src == connection.initiator and packet[TCP].flags == "S":
+                # typical connection start
                 connection.state = "syn"
             else:
                 Logger.log_malicious_packet(
@@ -77,9 +97,19 @@ class Connection(Check):
                 )
                 connection.state = "ack"
         elif connection.state == "syn":
+            # we are now in state 0, initial SYN seen, but no reply
             if dst == connection.initiator and packet[TCP].flags == "SA":
                 connection.state = "synack"
+            elif dst == connection.initiator and packet[TCP].flags == "R":
+                # connection was rejected, not necessarily suspicious
+                _terminate_connection(key, "REJ")
+            elif src == connection.initiator and packet[TCP].flags == "R":
+                # connection was rejected by initiator (originator) in state 0
+                _terminate_connection(key, "RSTOS0")
             else:
+                if "F" in packet[TCP].flags:
+                    # connection was closed before being initiated
+                    _terminate_connection(key, "SH")
                 Logger.log_malicious_packet(
                     packet, "Invalid TCP handshake flags (expected SA)"
                 )
@@ -99,13 +129,47 @@ class Connection(Check):
         elif connection.state == "fin":
             if dst == connection.finisher and packet[TCP].flags == "FA":
                 connection.state = "finack"
-        if (
-            connection.state == "finack"
-            and src == connection.finisher
-            and packet[TCP].flags == "A"
-            or "R" in packet[TCP].flags
-        ):
-            # TODO: Is it really needed to do a ml check if before malicious was detected ?
-            # TODO: Call another check inside a check breaking a logic and must be avoided!!!
-            MLCheck.check(packet)
-            del tcp_connections[key]
+        elif connection.state == "finack":
+            if dst == connection.initiator and packet[TCP].flags == "A":
+                _terminate_connection(key, "SF")
+
+
+def _process_timeouts():
+    for key, connection in list(tcp_connections.items()):
+        if time() - connection.last_packet <= 30:
+            continue
+        # connections are timed out if there are no packets
+        # sent for at least 30 seconds
+        if connection.state == "syn":
+            # initial SYN, but no reply
+            _terminate_connection(key, "S0")
+        elif connection.state == "synack":
+            # connection established, but nothing since then
+            _terminate_connection(key, "S1")
+        else:
+            # other connection flag
+            _terminate_connection(key, "OTH")
+
+
+def _terminate_connection(key: tuple[str, str, int, int], flag: str):
+    connection = tcp_connections.pop(key)
+    # duration in seconds
+    duration = time() - connection.begin
+    if connection.port in service_map:
+        service = service_map[connection.port]
+    elif connection.port >= 49152:
+        # private/ephemeral port
+        service = "private"
+    else:
+        # unknown port
+        service = 'other'
+    MLCheck.check(
+        "tcp",
+        flag,
+        service,
+        duration,
+        connection.src_bytes,
+        connection.dst_bytes,
+        key[0] == key[1] or key[2] == key[3],  # land if the connection is from/to the same host/port
+        connection.urgent,
+    )

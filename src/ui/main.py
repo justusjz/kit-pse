@@ -82,7 +82,6 @@ def load_dataset():
     if print_data_graphs.get():
         open_data_charts_window()
 
-
 # Load Dataset Button
 load_dataset_button = ttk.Button(
     buttons_frame,
@@ -127,14 +126,13 @@ footer_label.pack(side="bottom", pady=10)
 
 load_dataset_frame = ttk.Frame(main_page)
 load_dataset_frame.pack()
+
 print_data_graphs = tk.BooleanVar(value=True)
 ttk.Checkbutton(
     load_dataset_frame,
     variable=print_data_graphs,
     text="Print data graphs?",
     bootstyle=INFO,
-).grid(row=0, column=1)
-
 
 def train_model():
     print("training")
@@ -252,7 +250,6 @@ def create_scrolled_tab(tab):
 
     return plot_frame
 
-
 def get_meter_style(value):
     """
     Returns the meter style (color) based on the value.
@@ -271,6 +268,11 @@ def open_model_charts_window(predictions_mapped, y_test_mapped):
     notebook = ttk.Notebook(new_window)
     notebook.pack(fill="both", expand=True)
 
+    Y_test_mapped = ["attack" if y == 1.0 else "normal" for y in Y_test_mapped]
+    predictions_mapped = [
+        "attack" if pred == 1.0 else "normal" for pred in predictions_mapped
+    ]
+
     # scores
     accuracy = metrics.accuracy_score(y_test_mapped, predictions_mapped)
     sensitivity = metrics.recall_score(y_test_mapped, predictions_mapped, pos_label=1.0)
@@ -281,6 +283,7 @@ def open_model_charts_window(predictions_mapped, y_test_mapped):
     recall = metrics.recall_score(y_test_mapped, predictions_mapped, pos_label=1.0)
 
     tab = ttk.Frame(notebook)
+
     # Create a top frame for the first row of meters
     top_frame = ttk.Frame(tab)
     top_frame.pack(fill="x", pady=10)
