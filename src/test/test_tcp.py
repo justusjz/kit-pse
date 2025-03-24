@@ -28,7 +28,7 @@ class TestTCP(unittest.TestCase):
         with self.assertLogs() as log:
             send_test_tcp_packet(
                 IP(src="1.2.3.4", dst="9.10.11.12")
-                / TCP(sport=44486, dport=80, flags="SA")
+                / TCP(sport=44486, dport=80, flags="P")
             )
             self.assertEqual(
                 log.output,
