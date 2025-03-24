@@ -3,14 +3,13 @@ import time
 
 from pandas.core.groupby import DataFrameGroupBy
 from joblib import load, dump
-
+from src.machine_learning.model_enum import ModelEnum
 from src.logging.logger import Logger
 import pandas as pd
 from pandas import DataFrame
 from scipy.io import arff
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -34,16 +33,28 @@ class MLTrainer:
     def train(
         self,
         ml_model_name: str,
-        features: list[str],
+        auto_features: bool = False,
+        features: list[str] = None,
         dataset_path: str = ML_DATASET_PATH,
     ):
         """
         Train the model with specified data source and algorithm.
+        :param auto_features: take best features automatically in script
+        :param ml_model_name: name of the ML model to be trained.
         :param features: list of feature names from the datasource
         :param dataset_path: path to dataset
-        :return: predicted and test values for the model and training time
+        :return: test, prediction and training time values for the model metrics observability
+
         """
-        features_number = len(features)
+        try:
+            model = ModelEnum.get(ml_model_name)
+        except ValueError:
+            raise Exception("Invalid model name")
+
+        if features is None or auto_features:
+            features_number = FEATURES_NUMBER
+        else:
+            features_number = len(features)
         # Set display options to show all columns and rows
         pd.set_option("display.max_columns", None)  # Show all columns
 
@@ -68,20 +79,27 @@ class MLTrainer:
         Logger.debug("\n".join(["Is null stats:", str(df.isnull().sum())]))
 
         df = self.normalize_data(df)
-        data = self.analyze_data(df)
-        x, y = self.select_features(data, df, features_number)
+        if auto_features:
+            data = self.analyze_data(df)
+            x, y = self.select_features(data, df, features_number)
+        else:
+            # TODO: Change this hardcoded value
+            features = self.convert_features_names(df, features)
+            x, y = df[features], df["cat__class_b'normal'"]
+
         x_train, x_test, y_train, y_test = self.split_data(x, y)
 
         # start time tracing
         start_time = time.time()
-
-        model = self.train_model(x_train, x_test, y_train, y_test, LogisticRegression())
+        model, y_test, y_pred = self.train_model(
+            x_train, x_test, y_train, y_test, model.model_class()
+        )
         # self.train_model(x_train, x_test, y_train, y_test, SGDClassifier())
 
         # stop time tracing
         training_time = time.time() - start_time
         self.save_model(model)
-        return model.predict(x_test), y_test, training_time
+        return y_test, y_pred, training_time
 
     @staticmethod
     def normalize_data(df: DataFrame) -> DataFrame:
@@ -159,6 +177,16 @@ class MLTrainer:
         return X, y
 
     @staticmethod
+    def convert_features_names(df: DataFrame, orig_ft: list[str]) -> list[str]:
+        converted_features = []
+        for col in df.columns:
+            for ft in orig_ft:
+                if ft in col:
+                    converted_features.append(col)
+
+        return converted_features
+
+    @staticmethod
     def split_data(
         x: DataFrame, y: DataFrame
     ) -> tuple[DataFrame, DataFrame, DataFrame, DataFrame]:
@@ -186,9 +214,8 @@ class MLTrainer:
         """
         model.fit(x_train, y_train)
 
-        return model
-
         y_pred = model.predict(x_test)
+        return model, y_test, y_pred
 
         """
         Check results
@@ -223,6 +250,14 @@ class MLTrainer:
         """
         Logger.info(f"load model from: {INTEGRATION_MODEL_PATH}")
         return load(INTEGRATION_MODEL_PATH)
+
+    @staticmethod
+    def get_supported_model() -> list[str]:
+        """
+        Getting list with names of supported ml models
+        :return: list with names
+        """
+        return [model.name for model in ModelEnum]
 
 
 if __name__ == "__main__":
